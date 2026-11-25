@@ -248,6 +248,147 @@ class WebSocketRelayService {
       } catch (err) {
         ws.send(JSON.stringify({ type: "cashout.failed", event: eventId, id, data: { ok: false, error: err.message } }));
       }
+      return;
+    }
+
+    // 6. Wheel Spin (op: "spin") for Mini Spin / Roulette
+    if (op === "spin") {
+      const eventId = String(event || "88.0039");
+      const token = authState.token || data?.token || "demo";
+      const bets = Array.isArray(data?.bets) ? data.bets : [];
+      const clientSeed = String(data?.clientSeed || "");
+
+      let totalStake = 0;
+      bets.forEach(b => { totalStake += Number(b.amount) || 0; });
+      totalStake = Math.round(totalStake * 100) / 100;
+      if (totalStake <= 0) totalStake = 10;
+
+      const roundId = Math.floor(Date.now() / 1000);
+      const serverSeed = crypto.randomBytes(32).toString("hex");
+      const serverHash = crypto.createHash("sha256").update(serverSeed).digest("hex");
+
+      // Draw random pocket 0 to 12
+      const winningPocket = Math.floor(Math.random() * 13);
+
+      let totalWin = 0;
+      const outBets = bets.map(b => {
+        const pockets = Array.isArray(b.pockets) ? b.pockets : [];
+        const isHit = pockets.includes(winningPocket);
+        const mult = pockets.length > 0 ? (12 / pockets.length) * 0.96 : 0;
+        const win = isHit ? Math.round(Number(b.amount) * mult * 100) / 100 : 0;
+        totalWin += win;
+        return {
+          pockets,
+          amount: Number(b.amount).toFixed(2),
+          x: mult,
+          win: win.toFixed(2),
+        };
+      });
+
+      totalWin = Math.round(totalWin * 100) / 100;
+      const user = authState.user || { balance: 2500, currency: "EUR", username: "Player" };
+      user.balance = Math.round((user.balance - totalStake + totalWin) * 100) / 100;
+
+      // Reply to client
+      ws.send(
+        JSON.stringify({
+          type: "reply",
+          id,
+          data: {
+            ok: true,
+            result: {
+              round: roundId,
+              results: [winningPocket],
+              boosts: [],
+              bets: outBets,
+              stake: totalStake.toFixed(2),
+              win: totalWin.toFixed(2),
+              balance: user.balance,
+              seed: serverSeed,
+              hash: serverHash,
+              clientSeed,
+            },
+          },
+        })
+      );
+
+      // Broadcast wheel.result
+      this.broadcastEvent(eventId, {
+        event: eventId,
+        type: "wheel.result",
+        data: {
+          player: (user.username || "Player").slice(0, 2) + "***",
+          stake: totalStake.toFixed(2),
+          win: totalWin.toFixed(2),
+          results: [winningPocket],
+          boosts: [],
+        },
+      });
+      return;
+    }
+
+    // 7. Instant Dice Roll (op: "roll") for Dice Duel / Lucky Six / 7 Up 7 Down
+    if (op === "roll") {
+      const eventId = String(event || "88.0058");
+      const token = authState.token || data?.token || "demo";
+      const amount = Number(data?.amount || 10);
+      const choice = data?.choice;
+      const clientSeed = String(data?.clientSeed || "");
+
+      const roundId = Math.floor(Date.now() / 1000);
+      const serverSeed = crypto.randomBytes(32).toString("hex");
+      const serverHash = crypto.createHash("sha256").update(serverSeed).digest("hex");
+
+      const die1 = Math.floor(Math.random() * 6) + 1;
+      const die2 = Math.floor(Math.random() * 6) + 1;
+      const dice = [die1, die2];
+
+      const won = die1 > die2;
+      const push = die1 === die2;
+      const paid = won ? 1.96 : push ? 1.0 : 0.0;
+      const win = Math.round(amount * paid * 100) / 100;
+
+      const user = authState.user || { balance: 2500, currency: "EUR", username: "Player" };
+      user.balance = Math.round((user.balance - amount + win) * 100) / 100;
+
+      // Reply to client
+      ws.send(
+        JSON.stringify({
+          type: "reply",
+          id,
+          data: {
+            ok: true,
+            result: {
+              round: roundId,
+              dice,
+              won,
+              push,
+              x: paid,
+              win: win.toFixed(2),
+              balance: user.balance,
+              seed: serverSeed,
+              hash: serverHash,
+              clientSeed,
+            },
+          },
+        })
+      );
+
+      // Broadcast instant.result
+      this.broadcastEvent(eventId, {
+        event: eventId,
+        type: "instant.result",
+        data: {
+          player: (user.username || "Player").slice(0, 2) + "***",
+          amount: amount.toFixed(2),
+          dice,
+          x: paid,
+          win: win.toFixed(2),
+          won,
+          push,
+        },
+      });
+      return;
     }
   }
 

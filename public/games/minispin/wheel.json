@@ -1,0 +1,20 @@
+{
+  "id": "88.0039",
+  "pockets": [
+    {"label": "0", "color": "green", "weight": 1, "tags": ["zero"]},
+    {"label": "1", "color": "red", "weight": 1, "tags": ["odd", "low", "street1", "row1"]},
+    {"label": "2", "color": "black", "weight": 1, "tags": ["even", "low", "street1", "row2"]},
+    {"label": "3", "color": "black", "weight": 1, "tags": ["odd", "low", "street1", "row3"]},
+    {"label": "4", "color": "red", "weight": 1, "tags": ["even", "low", "street2", "row1"]},
+    {"label": "5", "color": "red", "weight": 1, "tags": ["odd", "low", "street2", "row2"]},
+    {"label": "6", "color": "black", "weight": 1, "tags": ["even", "low", "street2", "row3"]},
+    {"label": "7", "color": "black", "weight": 1, "tags": ["odd", "high", "street3", "row1"]},
+    {"label": "8", "color": "red", "weight": 1, "tags": ["even", "high", "street3", "row2"]},
+    {"label": "9", "color": "red", "weight": 1, "tags": ["odd", "high", "street3", "row3"]},
+    {"label": "10", "color": "black", "weight": 1, "tags": ["even", "high", "street4", "row1"]},
+    {"label": "11", "color": "black", "weight": 1, "tags": ["odd", "high", "street4", "row2"]},
+    {"label": "12", "color": "red", "weight": 1, "tags": ["even", "high", "street4", "row3"]}
+  ],
+  "balls": 1,
+  "zeroHalfBack": false
+}

@@ -40,7 +40,36 @@ app.get(["/health", "/status"], (req, res) => {
 
 // Direct compatibility alias for /games -> /ogh/games
 app.get("/games", (req, res) => {
-  res.json({ status: true, data: GAMES_CATALOG });
+  res.json({
+    status: true,
+    data: {
+      items: GAMES_CATALOG,
+      count: GAMES_CATALOG.length
+    }
+  });
+});
+
+app.all(["/betLimit", "/ogh/betLimit"], (req, res) => {
+  const gameId = req.query.game || req.body?.game || "88.0039";
+  const game = GAMES_CATALOG.find(g => g.id === gameId || g.code === gameId);
+  const min = game?.minBet ? Number(game.minBet) : 10;
+  const max = game?.maxBet ? Number(game.maxBet) : 25000;
+  res.json({
+    status: true,
+    data: {
+      limit: { min, max }
+    }
+  });
+});
+
+app.all(["/playerBalance", "/ogh/playerBalance"], async (req, res) => {
+  const token = req.query.token || req.headers.authorization?.replace(/^Bearer\s+/i, "") || "demo";
+  try {
+    const balanceData = await seamlessWalletService.getBalance(token);
+    res.json(balanceData);
+  } catch (err) {
+    res.status(200).json({ status: true, data: { balance: 2500, currency: "EUR" } });
+  }
 });
 
 // 3. API Routes

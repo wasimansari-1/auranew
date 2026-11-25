@@ -51,6 +51,20 @@ router.post("/playerBalance", async (req, res) => {
   }
 });
 
+// 4. Bet Limits: POST/GET /ogh/betLimit
+router.all("/betLimit", (req, res) => {
+  const gameId = req.query.game || req.body?.game || "88.0039";
+  const game = GAMES_CATALOG.find(g => g.id === gameId || g.code === gameId);
+  const min = game?.minBet ? Number(game.minBet) : 10;
+  const max = game?.maxBet ? Number(game.maxBet) : 25000;
+  return res.json({
+    status: true,
+    data: {
+      limit: { min, max }
+    }
+  });
+});
+
 // 4. Player Transactions: POST /ogh/playerTransactions
 router.post("/playerTransactions", async (req, res) => {
   const token = extractToken(req);

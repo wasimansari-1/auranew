@@ -1,0 +1,149 @@
+SINBAD1.webp
+size:2017,1669
+filter:MipMapLinearLinear,Linear
+1
+bounds:2,239,306,345
+offsets:25,121,2152,731
+2
+bounds:1396,21,70,198
+offsets:305,145,2152,731
+rotate:90
+3
+bounds:1700,460,125,178
+offsets:556,136,2152,731
+rotate:90
+4
+bounds:614,251,218,333
+offsets:354,87,2152,731
+5
+bounds:1054,8,133,254
+offsets:653,134,2152,731
+6
+bounds:1924,1329,64,91
+offsets:790,300,2152,731
+rotate:90
+7
+bounds:1867,58,109,142
+offsets:789,142,2152,731
+rotate:90
+Background
+bounds:2,587,1920,1080
+offsets:1,1,1922,1082
+Layer 1
+bounds:1924,1395,91,94
+Layer 10
+bounds:890,8,162,254
+Layer 11
+bounds:571,9,163,236
+offsets:4,0,167,237
+Layer 12
+bounds:1924,1059,83,197
+offsets:1,0,84,197
+Layer 13
+bounds:1924,788,190,82
+rotate:90
+Layer 14
+bounds:1924,980,77,83
+rotate:90
+Layer 15
+bounds:1571,392,127,192
+offsets:0,1,156,193
+Layer 16
+bounds:1423,389,195,146
+rotate:90
+Layer 17
+bounds:216,9,228,166
+rotate:90
+Layer 18
+bounds:1633,238,34,47
+rotate:90
+Layer 19
+bounds:736,2,21,26
+offsets:0,10,21,36
+Layer 2
+bounds:1924,1258,69,88
+offsets:1,0,71,88
+rotate:90
+Layer 20
+bounds:1820,160,41,45
+rotate:90
+Layer 21
+bounds:1633,173,45,28
+Layer 22
+bounds:759,5,23,29
+rotate:90
+Layer 23
+bounds:1423,317,70,31
+rotate:90
+Layer 24
+bounds:2,5,212,232
+Layer 3
+bounds:1698,24,120,143
+offsets:5,45,125,188
+Layer 4
+bounds:1880,445,134,139
+offsets:0,7,165,146
+Layer 5
+bounds:1223,308,198,276
+offsets:1,0,199,278
+Layer 6
+bounds:1924,586,79,200
+offsets:103,0,182,200
+Layer 7
+bounds:384,8,185,237
+Layer 8
+bounds:1456,318,69,38
+rotate:90
+Layer 9
+bounds:310,247,302,337
+offsets:223,0,525,338
+a
+bounds:834,264,263,320
+offsets:967,116,2152,731
+c1
+bounds:1633,274,44,60
+offsets:686,1063,1190,1322
+rotate:90
+c2
+bounds:1319,16,75,75
+offsets:587,1055,1190,1322
+d
+bounds:1189,25,128,252
+offsets:1176,142,2152,731
+e
+bounds:1924,1491,91,176
+offsets:1351,154,2152,731
+ee
+bounds:1698,203,120,176
+offsets:1835,144,2152,731
+rotate:90
+h1
+bounds:1515,171,116,147
+offsets:784,604,1920,1080
+h2
+bounds:1496,320,67,174
+offsets:788,482,1920,1080
+rotate:90
+n
+bounds:736,30,152,219
+offsets:1430,121,2152,731
+neck
+bounds:1878,169,123,171
+offsets:889,670,1920,1080
+r
+bounds:1878,342,101,128
+offsets:1768,147,2152,731
+rotate:90
+s2
+bounds:1319,93,194,213
+offsets:849,559,1920,1080
+t
+bounds:1099,279,122,305
+offsets:1552,134,2152,731
+u
+bounds:1700,325,133,176
+offsets:1670,123,2152,731
+rotate:90
+v
+bounds:1596,11,100,156
+offsets:1265,151,2152,731

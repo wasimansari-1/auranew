@@ -1,0 +1,1022 @@
+:root {
+  --bg: #071029;
+  --bg-2: #0c1b40;
+  --panel: #13285a;
+  --panel-2: #0a1838;
+  --gold: #5fd3ff; /* ice accent */
+  --gold-2: #a8ecff;
+  --cream: #c9f2ff;
+  --maroon: #0a2a5e;
+  --chip: #1f5fd1;
+  --text: #eef8ff;
+  --muted: #a9c4e6;
+  --green: #18b24f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.3 "Trebuchet MS", system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Segoe UI Symbol", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+body {
+  background: radial-gradient(ellipse 120% 60% at 50% 0%, #0f2456 0%, var(--bg) 70%) var(--bg);
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+.game {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 10px calc(16px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── sticky game screen ── */
+.sticky {
+  --top-h: calc(58px + env(safe-area-inset-top, 0px)); /* the bar floating over the scene */
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin: 0 -10px;
+  padding: 0 0 8px;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sticky::after { /* soft edge where the fixed screen meets the page below */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -18px;
+  height: 18px;
+  background: linear-gradient(180deg, var(--bg), rgba(7, 16, 41, 0));
+  pointer-events: none;
+}
+
+/* the top bar floats over the scene's sky */
+.top {
+  position: absolute;
+  z-index: 4;
+  top: calc(8px + env(safe-area-inset-top, 0px));
+  left: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.round-btn {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+  background: var(--maroon);
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+}
+
+.round-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.logo {
+  height: 46px;
+  width: auto;
+  margin-right: auto;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+.wallet {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px 5px 14px;
+  border-radius: 999px;
+  border: 2px solid var(--gold);
+  background: linear-gradient(180deg, #1b3a78, #0b1d45);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.wallet__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.wallet strong {
+  font-size: 15px;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.wallet__sound {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+}
+
+.wallet__sound svg {
+  width: 18px;
+  height: 18px;
+}
+
+.wallet__sound[aria-pressed="false"] {
+  opacity: 0.5;
+}
+
+/* ── stage ── */
+/* Full-bleed scene: edge to edge, up under the top bar and down behind the results row.
+   The game itself stays clear; the scene only melts into the page below the play area. */
+.stage {
+  position: relative;
+  width: 100%;
+  height: min(calc(min(100vw, 720px) * 9 / 11 + var(--top-h) + 62px), 60vh);
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.stage::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.stage::after { /* only below the play area (--below, set by app.js): no edge, game untouched */
+  bottom: 0;
+  height: var(--below, 0px);
+  background: linear-gradient(180deg, rgba(7, 16, 41, 0), var(--bg));
+}
+
+.stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.stage__center { /* placed on the play area by app.js (left/top/width/height) */
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  top: var(--top-h);
+  width: 100%;
+  height: calc(100% - var(--top-h));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 18%;
+  pointer-events: none;
+  text-align: center;
+}
+
+.mult {
+  font-size: clamp(40px, 13vw, 76px);
+  font-weight: 800;
+  letter-spacing: -1px;
+  color: #fff;
+  text-shadow: 0 3px 0 rgba(0, 30, 80, 0.75), 0 6px 22px rgba(0, 0, 0, 0.45);
+  font-variant-numeric: tabular-nums;
+}
+
+.mult--crashed {
+  color: #ff4a2e;
+}
+
+.flew {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.hint {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+}
+
+.conn {
+  position: absolute;
+  z-index: 3;
+  top: calc(var(--top-h) + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(181, 35, 12, 0.92);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ── history ── */
+.history {
+  position: absolute; /* floats over the bottom of the scene */
+  z-index: 3;
+  left: 10px;
+  right: 10px;
+  bottom: 14px;
+  border-radius: 999px;
+  padding: 6px;
+  background: linear-gradient(180deg, #16305f, #0d1f45);
+  border: 1px solid rgba(95, 211, 255, 0.45);
+  overflow: hidden;
+}
+
+.history__track {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.history__track::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  flex-shrink: 0;
+  min-width: 52px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+  background: linear-gradient(180deg, #3a7bf0, var(--chip));
+  color: #fff;
+}
+
+.chip--big {
+  background: linear-gradient(180deg, #a8ecff, #4fb6ff);
+  color: #062046;
+}
+
+/* ── bet panels: frosted ice-block consoles (Sled Rush's own) ──
+   Snow piled on the top edge, icicles hanging under, the amount on a carved ice plate,
+   snowball quick amounts, a snow-tube LAUNCH button that becomes BAIL OUT, and the auto
+   cash-out as a slide-distance flag. Phone: one console; wide screens: two side by side. */
+.panels {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-top: 8px;
+}
+
+.panel[data-slot="1"] { /* phone: one panel */
+  display: none;
+}
+
+.panel {
+  position: relative;
+  padding: 0;
+  border-radius: 26px;
+  background:
+    linear-gradient(180deg, rgba(232, 248, 255, 0.26), rgba(140, 205, 245, 0.10) 45%, rgba(40, 90, 170, 0.18)),
+    linear-gradient(180deg, #2a5fa8, #143a78);
+  border: 2px solid rgba(214, 244, 255, 0.85);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.7),
+    inset 0 -6px 14px rgba(5, 30, 80, 0.45),
+    0 10px 26px rgba(0, 10, 40, 0.55),
+    0 0 0 4px rgba(120, 200, 255, 0.12);
+  overflow: visible;
+}
+
+/* snow piled along the top edge */
+.panel::before {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  top: -11px;
+  height: 20px;
+  pointer-events: none;
+  background:
+    radial-gradient(14px 10px at 6% 70%, #fff 96%, transparent 100%),
+    radial-gradient(22px 13px at 18% 62%, #fff 96%, transparent 100%),
+    radial-gradient(16px 11px at 31% 70%, #f4fbff 96%, transparent 100%),
+    radial-gradient(26px 14px at 45% 60%, #fff 96%, transparent 100%),
+    radial-gradient(18px 11px at 60% 68%, #f4fbff 96%, transparent 100%),
+    radial-gradient(24px 13px at 74% 62%, #fff 96%, transparent 100%),
+    radial-gradient(16px 10px at 88% 70%, #f4fbff 96%, transparent 100%),
+    linear-gradient(180deg, transparent 62%, #fff 62%);
+  filter: drop-shadow(0 2px 2px rgba(90, 160, 220, 0.5));
+}
+
+/* icicles hanging under the console */
+.panel::after {
+  content: "";
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: -10px;
+  height: 11px;
+  pointer-events: none;
+  background:
+    linear-gradient(135deg, rgba(214, 244, 255, 0.85) 50%, transparent 50%) 0 0 / 18px 11px repeat-x,
+    linear-gradient(225deg, rgba(214, 244, 255, 0.85) 50%, transparent 50%) 9px 0 / 18px 11px repeat-x;
+  -webkit-mask: linear-gradient(90deg, #000 0 30%, transparent 30% 38%, #000 38% 62%, transparent 62% 70%, #000 70%);
+  mask: linear-gradient(90deg, #000 0 30%, transparent 30% 38%, #000 38% 62%, transparent 62% 70%, #000 70%);
+  opacity: 0.8;
+}
+
+.panel__inner {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  padding: 18px 14px 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas: "stepper stepper" "quick quick" "action action" "autocash autocash";
+  justify-items: center;
+  align-items: center;
+  gap: 12px;
+}
+
+/* a slow frost shimmer sweeping across the ice */
+.panel__inner::before {
+  content: "";
+  position: absolute;
+  inset: -40% -60%;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 42%, rgba(255, 255, 255, 0.16) 50%, transparent 58%);
+  transform: translateX(-60%);
+  animation: ice-shimmer 7s ease-in-out infinite;
+}
+
+@keyframes ice-shimmer {
+  0%, 55% { transform: translateX(-60%); }
+  100% { transform: translateX(60%); }
+}
+
+.panel__inner > * {
+  position: relative;
+  min-width: 0;
+}
+
+/* the amount on a carved ice plate, with round ice knobs */
+.stepper {
+  grid-area: stepper;
+  display: flex;
+  align-items: center;
+  width: min(100%, 280px);
+  padding: 5px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #eaf9ff, #b9e3fa);
+  box-shadow: inset 0 3px 6px rgba(20, 80, 150, 0.45), inset 0 -2px 0 rgba(255, 255, 255, 0.9), 0 2px 0 rgba(255, 255, 255, 0.35);
+}
+
+.stepper input {
+  flex: 1;
+  min-width: 0;
+  height: 40px;
+  border: 0;
+  background: transparent;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 900;
+  color: #0a3a78;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.9);
+  outline: none;
+}
+
+.stepper__btn {
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #9be2ff, #2c8fe0 60%, #1561b8);
+  color: #fff;
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 3px 0 #0d4a92, 0 4px 8px rgba(0, 30, 80, 0.4);
+}
+
+.stepper__btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #0d4a92;
+}
+
+/* quick amounts as snowballs */
+.quick {
+  grid-area: quick;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.quick button {
+  min-width: 58px;
+  height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 22px;
+  background: radial-gradient(ellipse at 35% 28%, #ffffff 0 30%, #e4f4ff 60%, #b6d9f2 100%);
+  color: #0a3a78;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: inset 0 -4px 6px rgba(90, 150, 210, 0.45), 0 3px 6px rgba(0, 20, 60, 0.35);
+  transition: transform 0.15s;
+}
+
+.quick button:hover {
+  transform: translateY(-2px) rotate(-2deg);
+}
+
+.quick button:active {
+  transform: scale(0.94, 0.88);
+}
+
+/* LAUNCH: a snow-tube button (blue ring, white centre); turns into BAIL OUT during the run */
+.action {
+  grid-area: action;
+  position: relative;
+  width: min(100%, 300px);
+  min-height: 74px;
+  padding: 10px 18px;
+  border: 5px solid #1d7be0;
+  border-radius: 999px;
+  background: radial-gradient(ellipse at 50% 30%, #ffffff 0 34%, #d9f1ff 70%, #a9d8f7);
+  color: #0a3a78;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  line-height: 1.05;
+  cursor: pointer;
+  box-shadow: 0 0 0 3px #0d4a92, inset 0 -5px 0 rgba(30, 120, 210, 0.25), 0 8px 18px rgba(0, 40, 110, 0.5);
+  overflow: hidden;
+}
+
+.action::after { /* a frost glint running over the tube */
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 35%, rgba(255, 255, 255, 0.75) 48%, transparent 60%);
+  transform: translateX(-120%);
+  animation: tube-glint 3.6s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes tube-glint {
+  0%, 70% { transform: translateX(-120%); }
+  100% { transform: translateX(120%); }
+}
+
+.action:active {
+  transform: translateY(2px) scale(0.99);
+}
+
+.action small {
+  display: block;
+  margin-top: 3px;
+  font-size: 15px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #1a5aa8;
+}
+
+.action--cashout { /* BAIL OUT */
+  border-color: #1fae58;
+  background: radial-gradient(ellipse at 50% 30%, #f4fff7 0 30%, #b9f3cf 70%, #6fdc9a);
+  color: #0b5a2b;
+  box-shadow: 0 0 0 3px #0e7a3a, inset 0 -5px 0 rgba(20, 140, 70, 0.25), 0 8px 22px rgba(20, 160, 80, 0.55);
+  animation: bail-pulse 1s ease-in-out infinite;
+}
+
+.action--cashout small {
+  color: #0e7a3a;
+  font-size: 17px;
+  font-weight: 900;
+}
+
+@keyframes bail-pulse {
+  50% { box-shadow: 0 0 0 3px #0e7a3a, inset 0 -5px 0 rgba(20, 140, 70, 0.25), 0 8px 30px rgba(40, 220, 120, 0.85); }
+}
+
+.action--waiting,
+.action:disabled {
+  border-color: #6f8db8;
+  background: radial-gradient(ellipse at 50% 30%, #eef5fb 0 34%, #cbd9e8);
+  color: #4a6488;
+  box-shadow: 0 0 0 3px #4a6488;
+  cursor: default;
+}
+
+.action--waiting::after,
+.action:disabled::after {
+  display: none;
+}
+
+.action--waiting small {
+  color: #4a6488;
+}
+
+.action--cancel {
+  border-color: #e0452a;
+  background: radial-gradient(ellipse at 50% 30%, #fff4f1 0 34%, #ffc9bd);
+  color: #9a1c08;
+  box-shadow: 0 0 0 3px #9a1c08;
+}
+
+.action--cancel small {
+  color: #9a1c08;
+}
+
+/* auto cash-out: how far the penguin slides before bailing out — a groove with a flag */
+.auto {
+  grid-area: autocash;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: min(100%, 320px);
+  padding: 4px 6px 4px 12px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(5, 30, 80, 0.45), rgba(5, 30, 80, 0.25));
+  box-shadow: inset 0 2px 4px rgba(0, 10, 40, 0.5);
+  font-size: 13px;
+  font-weight: 800;
+  color: #d6f2ff;
+}
+
+.auto__label {
+  flex-shrink: 0;
+}
+
+.auto__groove { /* the slide: dotted ice groove leading to the flag */
+  flex: 1;
+  min-width: 18px;
+  height: 4px;
+  border-radius: 2px;
+  background: repeating-linear-gradient(90deg, rgba(214, 244, 255, 0.85) 0 6px, transparent 6px 11px);
+  opacity: 0.6;
+}
+
+.switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 40px; /* tap target */
+  cursor: pointer;
+}
+
+.switch input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
+}
+
+.switch__track {
+  width: 52px;
+  height: 28px;
+  border-radius: 999px;
+  border: 2px solid rgba(214, 244, 255, 0.9);
+  background: #0a2350;
+  padding: 2px;
+  display: flex;
+  transition: background 0.2s;
+}
+
+.switch__knob { /* a little snowball */
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff, #bfe3fa);
+  transition: transform 0.2s;
+}
+
+.switch input:checked + .switch__track {
+  background: #1d7be0;
+}
+
+.switch input:checked + .switch__track .switch__knob {
+  transform: translateX(24px);
+}
+
+.switch input:focus-visible + .switch__track {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.auto__x { /* the distance flag */
+  width: 74px;
+  height: 40px;
+  flex-shrink: 0;
+  border: 0;
+  padding-left: 8px;
+  border-radius: 4px;
+  clip-path: polygon(0 0, 88% 0, 100% 50%, 88% 100%, 0 100%);
+  background: linear-gradient(180deg, #ff6b5b, #d63a2a);
+  color: #fff;
+  text-align: center;
+  font-weight: 900;
+  outline: none;
+  box-shadow: inset 4px 0 0 #8a1c10;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel__inner::before,
+  .action::after,
+  .action--cashout {
+    animation: none;
+  }
+}
+
+/* ── bets: a frosted ice board ── */
+.bets {
+  border-radius: 26px;
+  padding: 10px;
+  background: linear-gradient(180deg, rgba(232, 248, 255, 0.18), rgba(40, 90, 170, 0.15)), linear-gradient(180deg, #1d4688, #0e2a5c);
+  border: 2px solid rgba(214, 244, 255, 0.6);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5), 0 10px 24px rgba(0, 10, 40, 0.45);
+}
+
+.bets__head { /* a carved ice plate */
+  border-radius: 18px;
+  padding: 12px 14px;
+  background: linear-gradient(180deg, #eaf9ff, #b9e3fa);
+  box-shadow: inset 0 3px 6px rgba(20, 80, 150, 0.35), inset 0 -2px 0 rgba(255, 255, 255, 0.9);
+  color: #0a3a78;
+}
+
+.bets__tabs {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.bets__tab {
+  min-width: 120px;
+  height: 40px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(10, 58, 120, 0.15);
+  color: #1a5aa8;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.bets__tab--on {
+  background: linear-gradient(180deg, #2c8fe0, #1561b8);
+  color: #fff;
+  box-shadow: 0 3px 0 #0d4a92;
+}
+
+.bets__count {
+  margin-top: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.bets__cols,
+.row {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 0.8fr 1fr;
+  gap: 6px;
+  align-items: center;
+}
+
+.bets__cols {
+  margin: 10px 0 6px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: rgba(5, 30, 80, 0.35);
+  color: #bfe6ff;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bets__cols span:not(:first-child),
+.row span:not(:first-child) {
+  text-align: center;
+}
+
+.bets__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.row { /* an ice tile */
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(214, 244, 255, 0.16), rgba(214, 244, 255, 0.06));
+  border: 1px solid rgba(214, 244, 255, 0.22);
+  font-size: 14px;
+}
+
+.row--cashed {
+  background: linear-gradient(180deg, rgba(80, 230, 150, 0.35), rgba(30, 160, 90, 0.25));
+  border-color: rgba(160, 255, 200, 0.6);
+}
+
+.row--mine {
+  outline: 2px solid #ffffff;
+}
+
+.row__user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.row__user span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.avatar { /* player initial on a snowball tinted from their name */
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-style: normal;
+  font-size: 14px;
+  font-weight: 900;
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: inset 0 -3px 4px rgba(0, 0, 0, 0.25);
+}
+
+.row__x {
+  font-weight: 900;
+  color: #a8ecff;
+}
+
+.row__win {
+  font-weight: 900;
+}
+
+.empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 18px 0 10px;
+}
+
+.fair {
+  margin: 12px 4px 0;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  text-decoration: underline dotted;
+  cursor: pointer;
+}
+
+.fair__detail {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 4px 6px 0;
+}
+
+.fair__detail p {
+  margin: 10px 0 4px;
+}
+
+.fair__detail code {
+  display: block;
+  word-break: break-all;
+  font: 11px ui-monospace, Menlo, monospace;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: #fff;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.fair__detail a {
+  color: var(--gold-2);
+}
+
+/* ── wide screens: bets list on the left, game + two panels side by side ── */
+@media (min-width: 900px) {
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .game {
+    max-width: none;
+    height: 100vh;
+    padding: 0;
+    display: grid;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    grid-template-columns: minmax(280px, 24%) minmax(0, 1fr); /* right column may shrink: no sideways overflow */
+    grid-template-rows: minmax(0, 1fr) auto auto; /* play area · results · bet panels */
+    gap: 0 14px;
+  }
+
+  .sticky,
+  .panels,
+  .bets {
+    min-width: 0;
+  }
+
+  .sticky::after {
+    display: none;
+  }
+
+  /* The scene fills the whole right side, top to bottom; the results row and the bet panels
+     float over its lower part (it fades into the page colour behind them: no cut). */
+  .sticky {
+    display: contents;
+  }
+
+  .stage { /* behind everything: the bets list, results row and panels float over it */
+    grid-column: 1 / 3;
+    grid-row: 1 / 4;
+    height: 100vh;
+  }
+
+  .top {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .stage::after { /* below the play area the scene melts away behind the results and panels */
+    background: linear-gradient(180deg, rgba(7, 16, 41, 0) 0, rgba(7, 16, 41, 0.75) 60px, var(--bg) 100px);
+  }
+
+  /* its left side and bottom melt into the page (like the shade under the top bar) */
+  .stage__edges {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    /* behind the bets list (left of the play area, --left set by app.js) the scene melts away */
+    width: calc(var(--left, 0px) + 40px);
+    right: auto;
+    background: linear-gradient(90deg, var(--bg) 0, var(--bg) calc(100% - 140px), rgba(7, 16, 41, 0.7) calc(100% - 60px), rgba(7, 16, 41, 0) 100%);
+  }
+
+  .history {
+    grid-column: 2;
+    grid-row: 2;
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    z-index: 3;
+    margin: 0 12px 10px 24px;
+  }
+
+  .bets {
+    grid-column: 1;
+    grid-row: 1 / 4;
+    position: relative;
+    z-index: 3;
+    min-height: 0;
+    margin: 12px 0 12px 12px;
+    overflow-y: auto;
+  }
+
+  /* two ice consoles side by side, floating over the scene's lower part */
+  .panels {
+    grid-column: 2;
+    grid-row: 3;
+    position: relative;
+    z-index: 3;
+    margin: 0 14px 18px 24px;
+    padding-top: 12px;
+    align-self: start;
+    flex-direction: row;
+    gap: 18px;
+  }
+
+  .panel,
+  .panel[data-slot="1"] {
+    display: block;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .panel__inner {
+    grid-template-columns: minmax(0, auto) minmax(0, auto);
+    grid-template-areas: "stepper action" "quick action" "autocash autocash";
+    justify-content: center;
+    gap: 10px 14px;
+    padding: 16px 12px 12px;
+  }
+
+  .stepper {
+    width: clamp(160px, 14vw, 250px);
+  }
+
+  .quick {
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+
+  .quick button {
+    min-width: 42px; /* tap target */
+    height: 40px;
+    padding: 0 clamp(7px, 0.7vw, 12px);
+    font-size: clamp(12px, 0.95vw, 15px);
+  }
+
+  .action {
+    width: clamp(140px, 12vw, 220px);
+    min-height: 100px;
+    border-radius: 50px;
+    font-size: clamp(18px, 1.5vw, 22px);
+  }
+
+  .auto {
+    width: auto;
+    justify-self: center;
+  }
+}
+
+/* ── toast ── */
+.toast {
+  position: fixed;
+  left: 50%;
+  top: calc(60px + env(safe-area-inset-top, 0px));
+  transform: translateX(-50%);
+  z-index: 20;
+  max-width: calc(100% - 32px);
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: #0b1d45;
+  border: 2px solid var(--gold);
+  font-weight: 700;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.toast--win {
+  background: linear-gradient(180deg, #2fbf5f, #158a3c);
+  border-color: #b9f5c9;
+}
+
+.toast--error {
+  background: linear-gradient(180deg, #d1361a, #9a1c08);
+  border-color: #ffb3a3;
+}
+
+/* Sled Rush: the penguin rides low in the play area — the multiplier sits higher, over the sky */
+.stage__center {
+  padding-top: 0;
+  padding-bottom: 34%;
+}
+
+@media (min-width: 900px) {
+  .stage__center {
+    padding-bottom: 14%;
+  }
+}

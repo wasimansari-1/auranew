@@ -1,0 +1,28 @@
+{
+  "name": "nexorng-engine",
+  "version": "1.0.0",
+  "description": "NexoRNG 3D WebGL Crash & Table Games Multi-Tenant Seamless Engine",
+  "main": "backend/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node backend/server.js",
+    "dev": "node --watch backend/server.js"
+  },
+  "keywords": [
+    "nexorng",
+    "crash-game",
+    "vimaan",
+    "aladdin",
+    "casino-engine",
+    "seamless-wallet"
+  ],
+  "author": "Antigravity",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.7.9",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "ws": "^8.18.0"
+  }
+}

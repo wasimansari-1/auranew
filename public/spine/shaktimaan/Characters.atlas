@@ -1,0 +1,219 @@
+Characters.webp
+size:2032,2033
+filter:MipMapLinearLinear,Linear
+pma:true
+scale:0.86
+A
+bounds:1320,23,179,274
+rotate:90
+A 3 glow
+bounds:1463,1647,298,384
+A glow#
+bounds:1477,1174,280,383
+A2
+bounds:1748,29,173,274
+offsets:0,0,174,274
+rotate:90
+A2 glow
+bounds:1631,204,275,383
+rotate:90
+A3
+bounds:938,2,199,275
+rotate:90
+G glow
+bounds:1647,481,306,383
+rotate:90
+H
+bounds:1759,1277,224,275
+H glow
+bounds:1091,1226,323,384
+rotate:90
+I
+bounds:67,5,66,274
+rotate:90
+I glow
+bounds:1246,472,173,383
+rotate:90
+K
+bounds:1104,276,191,274
+rotate:90
+K glow
+bounds:1466,789,290,383
+Layer 181
+bounds:351,132,310,483
+offsets:928,1,1242,1256
+Layer 182
+bounds:1763,1831,236,200
+offsets:4,2,242,209
+Layer 183
+bounds:436,3,71,224
+offsets:2,0,75,225
+rotate:90
+Layer 184
+bounds:1423,1559,77,81
+offsets:2,1,81,89
+Layer 185
+bounds:519,1499,32,45
+offsets:0,0,33,46
+Layer 186
+bounds:472,617,63,30
+rotate:90
+Layer 187
+bounds:540,91,39,28
+rotate:90
+Layer 188
+bounds:616,1500,44,14
+offsets:8,15,58,46
+rotate:90
+Layer 189
+bounds:632,1501,43,16
+offsets:2,1,46,19
+rotate:90
+Layer 190
+bounds:581,86,27,6
+offsets:2,2,30,9
+Layer 191
+bounds:553,1499,45,12
+offsets:1,2,46,15
+rotate:90
+Layer 192
+bounds:408,76,80,54
+offsets:2,1,83,56
+Layer 193
+bounds:1380,321,149,178
+offsets:2,2,151,181
+rotate:90
+Layer 194
+bounds:1463,655,182,132
+offsets:4,3,201,140
+Layer 195
+bounds:1215,12,103,190
+offsets:4,0,108,192
+Layer 196
+bounds:1596,24,150,178
+offsets:0,0,151,178
+Layer 198
+bounds:1758,794,96,162
+offsets:2,2,100,165
+rotate:90
+Layer 199
+bounds:1142,1553,87,104
+offsets:2,2,91,108
+rotate:90
+Layer 200
+bounds:351,75,55,55
+Layer 201
+bounds:567,1500,44,47
+offsets:1,1,46,49
+rotate:90
+Layer 202
+bounds:490,77,48,53
+offsets:0,1,51,55
+Layer 204
+bounds:2,1168,172,863
+offsets:1,2,174,867
+Layer 205
+bounds:519,1546,485,318
+offsets:2,2,490,321
+rotate:90
+Layer 206
+bounds:663,203,478,299
+offsets:3,1,482,301
+rotate:90
+Layer 207
+bounds:950,690,477,308
+offsets:8,2,487,314
+rotate:90
+Layer 208
+bounds:333,682,309,484
+offsets:1,1,311,487
+Layer 209
+bounds:684,1503,41,33
+rotate:90
+Layer 210
+bounds:541,653,27,27
+Layer 211
+bounds:601,98,32,31
+offsets:1,1,34,34
+rotate:90
+Layer 212
+bounds:650,1502,42,32
+offsets:6,10,61,44
+rotate:90
+Layer 213
+bounds:1248,1555,85,173
+offsets:2,2,93,176
+rotate:90
+Layer 215
+bounds:1260,647,301,201
+offsets:1,2,304,204
+rotate:90
+Layer 216
+bounds:839,1551,480,301
+offsets:10,2,492,304
+rotate:90
+Layer 217
+bounds:644,683,483,304
+offsets:2,14,487,320
+rotate:90
+Layer 218
+bounds:540,79,39,10
+offsets:2,2,43,14
+Layer 219
+bounds:343,6,91,65
+Layer 220
+bounds:504,622,35,58
+offsets:1,2,38,61
+Layer 221
+bounds:408,617,62,63
+offsets:2,0,66,65
+Layer 222
+bounds:333,617,73,63
+offsets:1,1,76,65
+Layer 223
+bounds:663,136,89,65
+offsets:1,2,90,67
+Layer 224
+bounds:570,94,29,36
+Layer 225
+bounds:634,103,27,23
+offsets:0,0,28,23
+rotate:90
+Layer 226
+bounds:2,2,69,63
+offsets:2,17,79,80
+rotate:90
+Layer 227
+bounds:754,136,77,65
+Layer 40
+bounds:964,275,192,138
+offsets:1,13,200,157
+rotate:90
+M
+bounds:1260,950,204,274
+N
+bounds:1763,1554,235,275
+offsets:0,0,236,275
+N glow
+bounds:705,1169,332,384
+rotate:90
+S
+bounds:964,469,219,280
+rotate:90
+S glow
+bounds:1142,1642,319,389
+T
+bounds:662,18,112,274
+offsets:0,0,113,274
+rotate:90
+T glow
+bounds:1759,892,219,383
+shadow 2
+bounds:2,616,329,550
+shadow 3
+bounds:176,1168,329,527
+rotate:90
+shadow 5
+bounds:2,73,347,541
+shoadow 4
+bounds:176,1499,341,532

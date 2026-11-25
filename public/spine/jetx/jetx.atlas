@@ -1,0 +1,99 @@
+jetx.webp
+size:1503,1471
+filter:MipMapLinearLinear,Linear
+1
+bounds:1296,437,180,211
+10
+bounds:1159,590,136,121
+11
+bounds:600,12,246,214
+rotate:90
+12
+bounds:815,61,224,181
+rotate:90
+13
+bounds:672,286,234,203
+rotate:90
+2
+bounds:433,1,248,167
+rotate:90
+3
+bounds:875,301,223,154
+rotate:90
+4
+bounds:174,4,258,192
+5
+bounds:232,250,260,226
+rotate:90
+6
+bounds:542,686,243,212
+rotate:90
+7
+bounds:458,258,251,213
+rotate:90
+8
+bounds:755,688,242,210
+rotate:90
+9
+bounds:1090,712,205,218
+Background
+bounds:1,510,960,540
+offsets:1,1,961,541
+rotate:90
+Layer 1
+bounds:542,930,960,540
+offsets:1,1,961,541
+Layer 19
+bounds:1,196,313,230
+offsets:127,58,482,324
+rotate:90
+Layer 2
+bounds:780,524,140,163
+Layer 20
+bounds:1291,223,141,101
+Layer 21
+bounds:1272,137,111,85
+Layer 22
+bounds:1296,788,204,142
+Layer 23
+bounds:1151,130,120,92
+Layer 24
+bounds:921,531,156,102
+rotate:90
+Layer 25
+bounds:1030,434,128,91
+Layer 26
+bounds:1030,257,176,127
+rotate:90
+Layer 27
+bounds:1024,525,183,134
+rotate:90
+Layer 28
+bounds:997,129,154,127
+Layer 29
+bounds:1144,5,151,124
+Layer 3
+bounds:1159,448,135,141
+Layer 30
+bounds:1293,325,155,112
+Layer 31
+bounds:966,709,220,123
+rotate:90
+Layer 32
+bounds:997,4,146,124
+Layer 33
+bounds:654,520,165,126
+rotate:90
+Layer 34
+bounds:1296,15,146,121
+Layer 35
+bounds:1158,223,132,109
+Layer 36
+bounds:1296,649,181,138
+Layer 37
+bounds:1159,333,134,115
+Layer 4
+bounds:542,513,111,172
+Layer 5
+bounds:1,2,194,172
+rotate:90

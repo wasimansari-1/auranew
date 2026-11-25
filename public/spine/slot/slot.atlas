@@ -1,0 +1,42 @@
+slot.webp
+size:1109,798
+filter:MipMapLinearLinear,Linear
+pma:true
+7 7
+bounds:949,606,158,190
+offsets:20,0,178,231
+7
+bounds:949,606,158,190
+offsets:20,0,178,231
+777
+bounds:949,606,158,190
+offsets:20,0,178,231
+button 3 copy 2
+bounds:949,243,65,65
+button 3
+bounds:949,243,65,65
+button 3 copy
+bounds:949,243,65,65
+glow 2
+bounds:949,511,93,93
+glow
+bounds:949,511,93,93
+glow 3
+bounds:949,511,93,93
+slot
+bounds:2,227,710,569
+straight handle down
+bounds:949,310,65,199
+straight handle up
+bounds:1016,314,61,195
+white 1
+bounds:2,2,223,470
+offsets:1,1,227,552
+rotate:90
+white 2
+bounds:714,246,233,550
+offsets:13,131,259,684
+white 3
+bounds:474,6,219,550
+offsets:18,131,328,684
+rotate:90

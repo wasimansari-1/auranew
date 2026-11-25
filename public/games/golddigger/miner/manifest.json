@@ -1,0 +1,13 @@
+{
+  "about": "Green-screen miner clips for miner.js: 720x1280 H.264, muted, faststart. key = green-dominance (alpha = 1 - (g - max(r,b) - threshold/255) * softness; despill g <= max(r,b) + despill/255). foot = boots point, miner = standing miner height (helmet to boots), lamp = headlamp, bit = jackhammer tip — fractions of the frame, measured from the clips; a point may be keyframes [[t, x, y], ...] over the clip's time. start = where the clip starts playing (s). drillStart hands over to drillLoop (next); drillLoop blends its end into its start (crossfade, s); cash and bust hold their last frame.",
+  "key": { "method": "green-dominance", "threshold": 14, "softness": 9, "despill": 6 },
+  "foot": [0.42, 0.932],
+  "miner": 0.85,
+  "clips": {
+    "idle": { "src": "idle.mp4", "loop": true, "lamp": [0.574, 0.133] },
+    "drillStart": { "src": "drill-start.mp4", "next": "drillLoop", "lamp": [0.653, 0.176], "bit": [0.565, 0.905] },
+    "drillLoop": { "src": "drill-loop.mp4", "loop": true, "crossfade": 0.25, "lamp": [0.675, 0.172], "bit": [0.565, 0.905] },
+    "cash": { "src": "cash.mp4", "start": 1.6, "lamp": [0.472, 0.09] },
+    "bust": { "src": "bust.mp4", "start": 1.4, "lamp": [[1.4, 0.446, 0.09], [2.2, 0.47, 0.2], [2.9, 0.61, 0.45]] }
+  }
+}

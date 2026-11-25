@@ -91,6 +91,7 @@ app.get(["/favicon.ico", "*/favicon.ico"], (req, res) => {
 
 // 5. Static Assets from public directory
 app.use("/games/vimaanlive", express.static(path.join(PUBLIC_DIR, "games/vimaan")));
+app.use(["/Banners", "/banners"], express.static(path.join(PUBLIC_DIR, "Banners")));
 app.use("/lobby/assets", express.static(path.join(PUBLIC_DIR, "assets")));
 app.use("/launchGame/assets", express.static(path.join(PUBLIC_DIR, "assets")));
 app.use(express.static(PUBLIC_DIR));

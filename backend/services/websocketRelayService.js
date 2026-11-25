@@ -44,90 +44,9 @@ class WebSocketRelayService {
       this.handleClientConnection(ws, req);
     });
 
-    console.log("⚡ NexoRNG Autonomous Local WebSocket Gateway active on /socket/ws");
-
-    // Autonomous Mode is PRIMARY (100% Self-Hosted & Unblockable)
-    if (process.env.ENABLE_UPSTREAM_RELAY === "true") {
-      console.log("🔗 Upstream Relay mode requested. Connecting to live upstream...");
-      this.connectUpstream();
-    } else {
-      console.log("🛡️ Running in 100% Autonomous Provably Fair Master Engine Mode (Zero Upstream Dependency)");
-      this.activateAutonomousFallback();
-    }
-  }
-
-  /**
-   * Connect to Upstream NexoRNG Live Multiplier Stream (Optional)
-   */
-  connectUpstream() {
-    try {
-      this.upstreamWs = new WebSocket("wss://launch.nexorng.com/socket/ws", {
-        headers: {
-          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-          "Origin": "https://launch.nexorng.com",
-        },
-      });
-
-      this.upstreamWs.on("open", () => {
-        this.upstreamConnected = true;
-        this.fallbackActive = false;
-        console.log("🔗 Connected to Upstream NexoRNG Live Multiplier Feed");
-
-        // Subscribe to all active game events
-        for (const eventId of this.activeEvents) {
-          this.upstreamWs.send(JSON.stringify({ op: "subscribe", event: eventId }));
-        }
-      });
-
-      this.upstreamWs.on("message", (raw) => {
-        try {
-          const msg = JSON.parse(raw.toString());
-          this.handleUpstreamMessage(msg);
-        } catch (_) {}
-      });
-
-      this.upstreamWs.on("error", (err) => {
-        this.activateAutonomousFallback();
-      });
-
-      this.upstreamWs.on("close", () => {
-        this.upstreamConnected = false;
-        this.activateAutonomousFallback();
-        if (process.env.ENABLE_UPSTREAM_RELAY === "true") {
-          setTimeout(() => this.connectUpstream(), 10000);
-        }
-      });
-    } catch (err) {
-      this.activateAutonomousFallback();
-    }
-  }
-
-  /**
-   * Process & Relay Upstream Messages
-   */
-  handleUpstreamMessage(msg) {
-    const eventId = String(msg.event || msg.data?.event || "");
-    if (!eventId) return;
-
-    // Cache latest snapshot and round state
-    if (msg.type === "snapshot") {
-      this.gameState.set(eventId, msg);
-    } else if (msg.type === "round.tick" || msg.type === "round.start" || msg.type === "round.crash") {
-      let state = this.gameState.get(eventId) || { event: eventId, history: [] };
-      state.current = msg;
-      this.gameState.set(eventId, state);
-    }
-
-    // Broadcast frame to all local clients subscribed to this event
-    const clients = this.subscribers.get(eventId);
-    if (clients && clients.size > 0) {
-      const payload = JSON.stringify(msg);
-      for (const client of clients) {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(payload);
-        }
-      }
-    }
+    console.log("⚡ NexoRNG 100% Autonomous Master Engine WebSocket active on /socket/ws");
+    console.log("🛡️ Zero Upstream Dependency Mode: Pure local Provably Fair RNG");
+    this.activateAutonomousFallback();
   }
 
   /**

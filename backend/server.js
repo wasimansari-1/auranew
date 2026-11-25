@@ -2,7 +2,6 @@ import express from "express";
 import http from "http";
 import path from "path";
 import cors from "cors";
-import axios from "axios";
 import { fileURLToPath } from "url";
 import fs from "fs";
 
@@ -57,10 +56,9 @@ app.get(["/favicon.ico", "*/favicon.ico"], (req, res) => {
 // 5. Static Assets from public directory
 app.use(express.static(PUBLIC_DIR));
 
-// 6. Dynamic Upstream Asset Mirror Proxy
-// If any static asset (.js, .css, .webp, .png, .json, .atlas, etc.) is missing locally,
-// fetch it on the fly from launch.nexorng.com, save to disk, and serve with exact headers.
-app.use(async (req, res, next) => {
+// 6. Static Asset Handler
+// All game assets (.js, .css, .webp, .png, .json, .atlas, .mp3, etc.) are served 100% locally from public/
+app.use((req, res, next) => {
   if (req.method !== "GET" && req.method !== "HEAD") return next();
   const ext = path.extname(req.path);
   if (!ext || req.path.startsWith("/ogh") || req.path.startsWith("/api")) return next();
@@ -70,33 +68,7 @@ app.use(async (req, res, next) => {
     return res.sendFile(localFile);
   }
 
-  // Optional dynamic upstream mirror (Disabled by default for 100% autonomous operation)
-  if (process.env.ENABLE_UPSTREAM_MIRROR === "true") {
-    try {
-      const upstreamUrl = `https://launch.nexorng.com${req.path}`;
-      const response = await axios({
-        method: req.method,
-        url: upstreamUrl,
-        responseType: "arraybuffer",
-        timeout: 5000,
-        validateStatus: () => true,
-        headers: {
-          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-          "Referer": "https://launch.nexorng.com/"
-        }
-      });
-
-      if (response.status === 200) {
-        fs.mkdirSync(path.dirname(localFile), { recursive: true });
-        fs.writeFileSync(localFile, response.data);
-        const ct = response.headers["content-type"];
-        if (ct) res.setHeader("Content-Type", ct);
-        return res.status(200).send(response.data);
-      }
-    } catch (_) {}
-  }
-
-  // Crucial: NEVER serve HTML for asset requests to prevent MIME type errors
+  // Never serve HTML for missing static assets to prevent MIME type errors
   return res.status(404).type("text/plain").send("Asset not found");
 });
 

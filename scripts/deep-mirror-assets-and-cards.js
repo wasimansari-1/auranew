@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 const ROOT = path.resolve(__dirname, "..");
 const PUBLIC_DIR = path.join(ROOT, "public");
 
-const BASE_URL = "https://launch.nexorng.com";
+const BASE_URL = "";
 const client = axios.create({
   baseURL: BASE_URL,
   timeout: 15000,

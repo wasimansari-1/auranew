@@ -1,0 +1,71 @@
+crash.webp
+size:1473,767
+filter:MipMapLinearLinear,Linear
+pma:false
+Layer 14
+bounds:846,6,424,159
+rotate:90
+Layer 15
+bounds:182,2,129,95
+Layer 16
+bounds:317,16,45,89
+Layer 17
+bounds:1007,5,31,69
+rotate:90
+Layer 18
+bounds:1007,66,24,54
+Layer 19
+bounds:752,37,67,125
+Layer 20
+bounds:1007,181,52,249
+Layer 21
+bounds:1033,76,44,18
+rotate:90
+Layer 22
+bounds:1081,179,386,153
+Layer 23
+bounds:2,99,313,234
+Layer 24 copy
+bounds:1061,125,18,305
+Layer 24
+bounds:1061,125,18,305
+Layer 4 copy
+bounds:1039,58,14,16
+Layer 8 copy
+bounds:435,432,653,333
+offsets:0,0,653,378
+Star 1
+bounds:317,107,112,106
+rotate:90
+Star 1 copy
+bounds:317,221,112,106
+rotate:90
+arm
+bounds:1250,14,163,186
+rotate:90
+back foot copy
+bounds:572,67,178,95
+body
+bounds:2,335,430,431
+rotate:90
+face
+bounds:1090,334,381,431
+front foot
+bounds:2,2,178,95
+hand
+bounds:425,29,133,145
+rotate:90
+jeckt
+bounds:435,164,409,266
+line
+bounds:1057,38,22,85
+low lip
+bounds:1007,122,57,48
+rotate:90
+pati
+bounds:1081,10,167,167
+tung
+bounds:1007,40,24,30
+rotate:90
+upr lip
+bounds:572,5,68,60

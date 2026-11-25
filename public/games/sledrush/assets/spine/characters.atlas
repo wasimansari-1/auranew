@@ -1,0 +1,111 @@
+characters.webp
+size:1969,870
+filter:MipMapLinearLinear,Linear
+pma:false
+2
+bounds:1479,325,25,27
+rotate:90
+3
+bounds:1324,68,18,17
+rotate:90
+4
+bounds:1343,69,21,17
+5
+bounds:1951,629,23,15
+rotate:90
+6
+bounds:1403,89,27,32
+7
+bounds:1479,352,27,28
+rotate:90
+8
+bounds:1432,91,25,30
+9
+bounds:1951,654,16,17
+Layer 17
+bounds:919,6,59,285
+offsets:0,1,59,286
+rotate:90
+Layer 18
+bounds:565,14,358,267
+offsets:1,1,360,269
+rotate:90
+Layer 19
+bounds:1306,73,48,16
+offsets:1,1,50,21
+rotate:90
+Layer 2
+bounds:1251,13,52,102
+rotate:90
+Layer 20
+bounds:1436,13,76,144
+rotate:90
+Layer 3
+bounds:1324,88,33,77
+offsets:1,1,35,79
+rotate:90
+Layer 4
+bounds:890,4,27,61
+Layer 4 copy
+bounds:1951,673,16,18
+Layer 5
+bounds:208,7,146,108
+offsets:1,0,148,109
+Layer 7
+bounds:1511,693,443,175
+offsets:1,0,444,177
+Layer 8 copy
+bounds:2,117,751,340
+offsets:0,0,751,434
+rotate:90
+arm
+bounds:1712,70,188,214
+rotate:90
+back foot copy
+bounds:2,5,204,110
+front foot
+bounds:2,5,204,110
+body
+bounds:344,374,494,491
+offsets:0,5,494,496
+rotate:90
+face
+bounds:1511,260,438,431
+offsets:0,11,439,495
+flsh light
+bounds:837,381,487,487
+hand
+bounds:1557,92,153,166
+jeckt
+bounds:834,67,470,305
+offsets:1,0,471,306
+line
+bounds:1452,281,25,98
+low lip
+bounds:834,2,63,54
+offsets:0,0,65,55
+rotate:90
+shadow
+bounds:1326,381,487,183
+offsets:348,182,1254,1254
+rotate:90
+snow vfx 1
+bounds:356,7,365,207
+offsets:182,238,1402,1122
+rotate:90
+snow vfx 2
+bounds:1306,123,256,144
+offsets:290,238,1402,1122
+rotate:90
+snow vfx 3
+bounds:1459,91,167,96
+offsets:378,239,1402,1122
+rotate:90
+tung
+bounds:1206,8,57,43
+offsets:0,0,57,44
+rotate:90
+upr lip
+bounds:1366,8,78,68
+offsets:0,1,78,69
+rotate:90

@@ -1,0 +1,1042 @@
+/* Deep Dive — NEXORNG crash game. Look: a little submarine diving from a tropical surface
+   down through the reef, the twilight zone and the glowing abyss. All art is drawn in code. */
+:root {
+  --bg: #041a30;
+  --bg-0: rgba(4, 26, 48, 0);
+  --hull: #0c3657;
+  --hull-2: #072440;
+  --steel: #1d5a82;
+  --aqua: #3fe0f0;
+  --aqua-2: #9ff4ff;
+  --coral: #ff8a3d;
+  --coral-2: #ffc06a;
+  --brass: #e8c26a;
+  --text: #eafcff;
+  --muted: #94c3d6;
+  --green: #14c48a;
+  --red: #ff5a4a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.3 "Trebuchet MS", system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+body {
+  background:
+    radial-gradient(120% 60% at 50% 0%, rgba(20, 90, 140, 0.35), rgba(4, 26, 48, 0) 70%),
+    radial-gradient(circle at 12% 70%, rgba(63, 224, 240, 0.06) 0 2px, transparent 3px) 0 0 / 90px 120px,
+    radial-gradient(circle at 70% 30%, rgba(159, 244, 255, 0.05) 0 1.5px, transparent 2.5px) 0 0 / 70px 90px,
+    var(--bg);
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+.game {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 10px calc(16px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── sticky game screen ── */
+.sticky {
+  --top-h: calc(58px + env(safe-area-inset-top, 0px)); /* the bar floating over the scene */
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin: 0 -10px;
+  padding: 0 0 8px;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sticky::after { /* soft edge where the fixed screen meets the page below */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -18px;
+  height: 18px;
+  background: linear-gradient(180deg, var(--bg), var(--bg-0));
+  pointer-events: none;
+}
+
+/* the top bar floats over the scene */
+.top {
+  position: absolute;
+  z-index: 4;
+  top: calc(8px + env(safe-area-inset-top, 0px));
+  left: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.round-btn {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(159, 244, 255, 0.75);
+  background: radial-gradient(circle at 35% 30%, rgba(40, 120, 170, 0.85), rgba(3, 26, 44, 0.85));
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0, 20, 40, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+.round-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.logo {
+  height: 40px;
+  width: auto;
+  min-width: 0;
+  flex-shrink: 1;
+  margin-right: auto;
+  overflow: visible;
+  filter: drop-shadow(0 2px 3px rgba(0, 18, 36, 0.55));
+}
+
+.logo text {
+  font: 900 23px "Arial Black", "Arial Rounded MT Bold", "Trebuchet MS", system-ui, sans-serif;
+  stroke: #04213a;
+  stroke-width: 3.2px;
+  stroke-linejoin: round;
+  paint-order: stroke;
+}
+
+.logo__deep {
+  fill: url(#lgDeep);
+}
+
+.logo__dive {
+  fill: url(#lgDive);
+}
+
+.wallet {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 4px 5px 4px 13px;
+  border-radius: 999px;
+  border: 2px solid rgba(159, 244, 255, 0.6);
+  background: linear-gradient(180deg, rgba(10, 60, 96, 0.88), rgba(3, 26, 44, 0.9));
+  box-shadow: 0 3px 10px rgba(0, 20, 40, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.wallet__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.wallet strong {
+  font-size: 15px;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.wallet__sound {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(159, 244, 255, 0.14);
+  color: var(--aqua-2);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+}
+
+.wallet__sound svg {
+  width: 18px;
+  height: 18px;
+}
+
+.wallet__sound[aria-pressed="false"] {
+  opacity: 0.45;
+}
+
+/* ── stage ── */
+/* Full-bleed scene: edge to edge, up under the top bar and down behind the results row.
+   The game itself stays clear; the scene only melts into the page below the play area. */
+.stage {
+  position: relative;
+  width: 100%;
+  height: min(calc(min(100vw, 720px) * 9 / 11 + var(--top-h) + 62px), 60vh);
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.stage::after { /* only below the play area (--below, set by app.js): no edge, game untouched */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  height: var(--below, 0px);
+  background: linear-gradient(180deg, var(--bg-0), var(--bg));
+  pointer-events: none;
+}
+
+.stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.stage__center { /* placed on the play area by app.js (left/top/width/height) */
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  top: var(--top-h);
+  width: 100%;
+  height: calc(100% - var(--top-h));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  pointer-events: none;
+  text-align: center;
+}
+
+.mult {
+  font-size: clamp(44px, 13vw, 84px);
+  font-weight: 900;
+  letter-spacing: -1px;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 0 22px rgba(63, 224, 240, 0.55), 0 3px 0 rgba(2, 24, 44, 0.7), 0 8px 24px rgba(0, 10, 30, 0.5);
+  font-variant-numeric: tabular-nums;
+}
+
+.mult--crashed {
+  color: var(--red);
+  text-shadow: 0 0 22px rgba(255, 60, 40, 0.55), 0 3px 0 rgba(40, 4, 4, 0.7), 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.flew {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 10, 30, 0.8);
+}
+
+.hint {
+  min-height: 1.3em;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  color: var(--aqua-2);
+  text-shadow: 0 2px 6px rgba(0, 10, 30, 0.85);
+}
+
+.conn {
+  position: absolute;
+  z-index: 3;
+  top: calc(var(--top-h) + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(200, 40, 30, 0.92);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ── results row: depth tags ── */
+.history {
+  position: absolute; /* floats over the bottom of the scene */
+  z-index: 3;
+  left: 10px;
+  right: 10px;
+  bottom: 14px;
+  border-radius: 16px;
+  padding: 6px;
+  background: rgba(2, 20, 36, 0.58);
+  border: 1px solid rgba(159, 244, 255, 0.22);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  overflow: hidden;
+}
+
+.history__track {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.history__track::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  flex-shrink: 0;
+  min-width: 54px;
+  padding: 4px 9px;
+  border-radius: 10px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #b9d6e3;
+  background: rgba(24, 70, 104, 0.55);
+  border: 1px solid rgba(185, 214, 227, 0.22);
+}
+
+.chip--mid {
+  color: #7ff0ff;
+  background: rgba(10, 110, 140, 0.45);
+  border-color: rgba(127, 240, 255, 0.45);
+}
+
+.chip--big {
+  color: #fff;
+  background: linear-gradient(180deg, #a15cff, #5b2bd0);
+  border-color: #d9b8ff;
+  box-shadow: 0 0 10px rgba(161, 92, 255, 0.55);
+}
+
+/* ── bet consoles ── */
+.panels {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.panel[data-slot="1"] { /* phone: one console only */
+  display: none;
+}
+
+.panel {
+  position: relative;
+  padding: 8px;
+  border-radius: 26px;
+  background: linear-gradient(180deg, #11426a, var(--hull-2));
+  border: 1px solid rgba(159, 244, 255, 0.2);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.1), inset 0 -3px 0 rgba(0, 0, 0, 0.25), 0 10px 24px rgba(0, 8, 20, 0.45);
+}
+
+.panel::before { /* rivets in the hull plate */
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 13px 13px, #8cc4dc 0 2px, #2a5f80 2.5px, transparent 3.5px),
+    radial-gradient(circle at calc(100% - 13px) 13px, #8cc4dc 0 2px, #2a5f80 2.5px, transparent 3.5px),
+    radial-gradient(circle at 13px calc(100% - 13px), #8cc4dc 0 2px, #2a5f80 2.5px, transparent 3.5px),
+    radial-gradient(circle at calc(100% - 13px) calc(100% - 13px), #8cc4dc 0 2px, #2a5f80 2.5px, transparent 3.5px);
+}
+
+.panel__inner {
+  position: relative;
+  border-radius: 20px;
+  padding: 18px 12px 14px;
+  border: 1.5px solid rgba(63, 224, 240, 0.32);
+  background: radial-gradient(120% 80% at 50% 0%, rgba(63, 224, 240, 0.1), rgba(63, 224, 240, 0) 70%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.panel__tag { /* small brass plate on the console */
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 1px 12px;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #f3d48a, #c8933a);
+  color: #3a2205;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.35);
+}
+
+.stepper { /* the depth-gauge read-out */
+  display: flex;
+  align-items: center;
+  width: min(100%, 270px);
+  padding: 5px;
+  border-radius: 999px;
+  background: #031827;
+  border: 2px solid var(--steel);
+  box-shadow: inset 0 0 14px rgba(63, 224, 240, 0.2), 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.stepper input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  text-align: center;
+  font-size: 21px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--aqua-2);
+  text-shadow: 0 0 10px rgba(63, 224, 240, 0.65);
+  outline: none;
+}
+
+.stepper__btn { /* brass valve wheels */
+  position: relative;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 36% 30%, #fff1c4, #e3ad4c 55%, #8f5c17);
+  color: #3a2205;
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.45), inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+  transition: transform 0.25s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.stepper__btn::after { /* spokes of the valve */
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: 50%;
+  border: 2px dashed rgba(90, 55, 10, 0.45);
+  pointer-events: none;
+}
+
+.stepper__btn:active {
+  transform: rotate(60deg) scale(0.94);
+}
+
+.quick {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.quick button {
+  min-width: 62px;
+  height: 40px;
+  padding: 0 10px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(159, 244, 255, 0.45);
+  background: rgba(3, 26, 44, 0.6);
+  color: var(--aqua-2);
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.quick button:active {
+  transform: translateY(1px);
+  background: rgba(63, 224, 240, 0.22);
+}
+
+.action {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  width: min(100%, 300px);
+  min-height: 70px;
+  border: 0;
+  border-radius: 22px;
+  background: linear-gradient(180deg, #ffbe62, #ff7d2e 55%, #e0521c);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(110, 30, 0, 0.55);
+  box-shadow: 0 6px 18px rgba(255, 125, 46, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.4), inset 0 -3px 0 rgba(120, 30, 0, 0.3);
+  cursor: pointer;
+}
+
+.action::before { /* a slow sonar sweep inside the button */
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 50%;
+  top: 50%;
+  width: 340px;
+  height: 340px;
+  margin: -170px 0 0 -170px;
+  background: conic-gradient(from 0deg, rgba(255, 255, 255, 0) 0 300deg, rgba(255, 255, 255, 0.28) 355deg, rgba(255, 255, 255, 0) 360deg);
+  animation: dd-sweep 3.2s linear infinite;
+  pointer-events: none;
+}
+
+.action small {
+  display: block;
+  font-size: 23px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.action--cashout {
+  background: linear-gradient(180deg, #5ff5c8, #19c98a 55%, #0e9a68);
+  text-shadow: 0 1px 2px rgba(0, 70, 40, 0.6);
+  box-shadow: 0 6px 18px rgba(20, 196, 138, 0.45), inset 0 2px 0 rgba(255, 255, 255, 0.4), inset 0 -3px 0 rgba(0, 70, 40, 0.3);
+  animation: dd-ping 1.1s ease-out infinite;
+}
+
+.action--waiting,
+.action:disabled {
+  background: linear-gradient(180deg, #2f5a7a, #1b3b56);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.12);
+  text-shadow: none;
+  cursor: default;
+  animation: none;
+}
+
+.action--waiting::before,
+.action:disabled::before {
+  display: none;
+}
+
+.action--cancel {
+  background: linear-gradient(180deg, #ff7a62, #d8321f);
+  box-shadow: 0 6px 18px rgba(216, 50, 31, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.3);
+}
+
+.action--cancel small,
+.action--waiting small {
+  font-size: 14px;
+}
+
+.action__bubbles { /* bubbles that rise out of the button when it is pressed */
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.action__bubbles i {
+  position: absolute;
+  bottom: -14px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.75);
+  opacity: 0;
+}
+
+.action--burst .action__bubbles i {
+  animation: dd-bubble 0.7s ease-out both;
+}
+
+.action__bubbles i:nth-child(1) { left: 14%; }
+.action__bubbles i:nth-child(2) { left: 32%; width: 7px; height: 7px; animation-delay: 0.08s !important; }
+.action__bubbles i:nth-child(3) { left: 52%; width: 12px; height: 12px; animation-delay: 0.03s !important; }
+.action__bubbles i:nth-child(4) { left: 70%; width: 6px; height: 6px; animation-delay: 0.12s !important; }
+.action__bubbles i:nth-child(5) { left: 86%; animation-delay: 0.05s !important; }
+
+@keyframes dd-sweep {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes dd-ping {
+  0% { box-shadow: 0 0 0 0 rgba(95, 245, 200, 0.55), 0 6px 18px rgba(20, 196, 138, 0.45), inset 0 2px 0 rgba(255, 255, 255, 0.4); }
+  100% { box-shadow: 0 0 0 14px rgba(95, 245, 200, 0), 0 6px 18px rgba(20, 196, 138, 0.45), inset 0 2px 0 rgba(255, 255, 255, 0.4); }
+}
+
+@keyframes dd-bubble {
+  0% { transform: translateY(0) scale(0.6); opacity: 0; }
+  20% { opacity: 1; }
+  100% { transform: translateY(-86px) scale(1.15); opacity: 0; }
+}
+
+.auto {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: 0.4px;
+  color: var(--muted);
+}
+
+.switch { /* ballast lever */
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.switch input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
+}
+
+.switch__track {
+  width: 58px;
+  height: 32px;
+  border-radius: 999px;
+  border: 2px solid var(--steel);
+  background: #031827;
+  padding: 3px;
+  display: flex;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5);
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.switch__knob {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff1c4, #e3ad4c 60%, #8f5c17);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  transition: transform 0.25s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+
+.switch input:checked + .switch__track {
+  background: rgba(63, 224, 240, 0.35);
+  border-color: var(--aqua);
+}
+
+.switch input:checked + .switch__track .switch__knob {
+  transform: translateX(26px);
+}
+
+.switch input:focus-visible + .switch__track {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.auto__x {
+  width: 76px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1.5px solid var(--steel);
+  background: #031827;
+  color: var(--aqua-2);
+  text-align: center;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+
+.auto__x:focus {
+  border-color: var(--aqua);
+}
+
+/* ── bets list ── */
+.bets {
+  border-radius: 26px;
+  padding: 10px;
+  background: linear-gradient(180deg, #0c3254, #061f36);
+  border: 1px solid rgba(159, 244, 255, 0.16);
+}
+
+.bets__head {
+  border-radius: 18px;
+  padding: 12px 14px;
+  background: rgba(2, 18, 32, 0.6);
+  border: 1px solid rgba(63, 224, 240, 0.25);
+}
+
+.bets__tabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.bets__tab {
+  min-width: 118px;
+  height: 40px;
+  border: 1.5px solid rgba(159, 244, 255, 0.3);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.bets__tab--on {
+  background: linear-gradient(180deg, #7ff0ff, #2ec5e6);
+  border-color: transparent;
+  color: #03243b;
+}
+
+.bets__count {
+  margin-top: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--muted);
+}
+
+.bets__count strong {
+  color: var(--aqua-2);
+}
+
+.bets__cols,
+.row {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 0.8fr 1fr;
+  gap: 6px;
+  align-items: center;
+}
+
+.bets__cols {
+  margin: 10px 0 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--muted);
+  border-bottom: 1px solid rgba(159, 244, 255, 0.14);
+}
+
+.bets__cols span:not(:first-child),
+.row span:not(:first-child) {
+  text-align: center;
+}
+
+.bets__list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.row {
+  padding: 7px 12px;
+  border-radius: 12px;
+  background: rgba(159, 244, 255, 0.06);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.row--cashed {
+  background: linear-gradient(90deg, rgba(20, 196, 138, 0.45), rgba(20, 196, 138, 0.2));
+}
+
+.row--mine {
+  outline: 2px solid var(--coral);
+}
+
+.row__user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.row__user span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.avatar {
+  display: block;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(159, 244, 255, 0.35);
+}
+
+.row__x {
+  font-weight: 800;
+  color: #7ff0ff;
+}
+
+.row__win {
+  font-weight: 800;
+}
+
+.empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 18px 0 10px;
+}
+
+.fair {
+  margin: 12px 4px 0;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  text-decoration: underline dotted;
+  cursor: pointer;
+}
+
+.fair__detail {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 4px 6px 0;
+}
+
+.fair__detail p {
+  margin: 10px 0 4px;
+}
+
+.fair__detail code {
+  display: block;
+  word-break: break-all;
+  font: 11px ui-monospace, Menlo, monospace;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: #fff;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.fair__detail a {
+  color: var(--aqua-2);
+}
+
+@media (max-width: 380px) {
+  .logo {
+    height: 34px;
+  }
+
+  .wallet {
+    padding-left: 10px;
+    gap: 4px;
+  }
+
+  .wallet strong {
+    font-size: 14px;
+  }
+}
+
+/* ── wide screens: bets list on the left, game + two consoles side by side ── */
+@media (min-width: 900px) {
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .game {
+    max-width: none;
+    height: 100vh;
+    padding: 0;
+    display: grid;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    grid-template-columns: minmax(280px, 24%) minmax(0, 1fr); /* right column may shrink: no sideways overflow */
+    grid-template-rows: minmax(0, 1fr) auto auto; /* play area · results · consoles */
+    gap: 0 14px;
+  }
+
+  .sticky,
+  .panels,
+  .bets {
+    min-width: 0;
+  }
+
+  .sticky::after {
+    display: none;
+  }
+
+  .sticky {
+    display: contents;
+  }
+
+  .stage { /* behind everything: the bets list, results row and consoles float over it */
+    grid-column: 1 / 3;
+    grid-row: 1 / 4;
+    height: 100vh;
+  }
+
+  .top {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .stage::after { /* below the play area the scene melts away behind the results and consoles */
+    background: linear-gradient(180deg, var(--bg-0) 0, rgba(4, 26, 48, 0.75) 60px, var(--bg) 100px);
+  }
+
+  .stage__edges { /* behind the bets list (left of the play area, --left set by app.js) */
+    position: absolute;
+    inset: 0;
+    right: auto;
+    z-index: 1;
+    width: calc(var(--left, 0px) + 40px);
+    pointer-events: none;
+    background: linear-gradient(90deg, var(--bg) 0, var(--bg) calc(100% - 140px), rgba(4, 26, 48, 0.7) calc(100% - 60px), var(--bg-0) 100%);
+  }
+
+  .history {
+    grid-column: 2;
+    grid-row: 2;
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    z-index: 3;
+    margin: 0 12px 10px 24px;
+  }
+
+  .bets {
+    grid-column: 1;
+    grid-row: 1 / 4;
+    position: relative;
+    z-index: 3;
+    min-height: 0;
+    margin: 12px 0 12px 12px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(159, 244, 255, 0.3) transparent;
+  }
+
+  .panels { /* one console bar with the two bets side by side */
+    grid-column: 2;
+    grid-row: 3;
+    position: relative;
+    z-index: 3;
+    margin: 0 12px 12px 24px;
+    align-self: start;
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .panel,
+  .panel[data-slot="1"] {
+    display: block;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .panel__inner {
+    display: grid;
+    grid-template-columns: minmax(0, auto) minmax(0, auto);
+    grid-template-areas: "stepper action" "quick action" "autocash autocash";
+    justify-content: center;
+    align-items: center;
+    gap: 10px 14px;
+    padding: 18px 10px 10px;
+  }
+
+  .stepper {
+    grid-area: stepper;
+    width: clamp(150px, 14vw, 240px);
+  }
+
+  .quick {
+    grid-area: quick;
+    flex-wrap: nowrap;
+    gap: 5px;
+  }
+
+  .quick button {
+    min-width: 0;
+    padding: 0 clamp(5px, 0.6vw, 12px);
+  }
+
+  .action {
+    grid-area: action;
+    width: clamp(120px, 12vw, 220px);
+    min-height: 96px;
+  }
+
+  .auto {
+    grid-area: autocash; /* not "auto": that word is a CSS keyword, not the named row */
+    justify-self: center;
+  }
+}
+
+/* narrower desktops: the four quick amounts sit 2 × 2 so none is squeezed */
+@media (min-width: 900px) and (max-width: 1279px) {
+  .stepper {
+    width: clamp(150px, 16vw, 200px);
+  }
+
+  .quick {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .quick button {
+    padding: 0 6px;
+    font-size: 14px;
+  }
+}
+
+/* ── toast ── */
+.toast {
+  position: fixed;
+  left: 50%;
+  top: calc(60px + env(safe-area-inset-top, 0px));
+  transform: translateX(-50%);
+  z-index: 20;
+  max-width: calc(100% - 32px);
+  padding: 10px 18px;
+  border-radius: 14px;
+  background: #062540;
+  border: 2px solid var(--aqua);
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.toast--win {
+  background: linear-gradient(180deg, #22d698, #0e9a68);
+  border-color: #c4ffe9;
+}
+
+.toast--error {
+  background: linear-gradient(180deg, #e2452f, #9c1d10);
+  border-color: #ffb8aa;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .action::before,
+  .action--cashout,
+  .action--burst .action__bubbles i {
+    animation: none;
+  }
+}

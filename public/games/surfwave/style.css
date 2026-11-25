@@ -1,0 +1,996 @@
+/* Surf Wave — NEXORNG original crash game. Layout follows the NEXORNG engine-game screen rules;
+   the look (deep-sea page, resin surfboard bet decks, shell quick amounts) is this game's own. */
+:root {
+  --bg: #04263d;
+  --bg-rgb: 4, 38, 61;
+  --deep: #031a2c;
+  --sea: #0b6fa4;
+  --sea-2: #0a4f7c;
+  --foam: #e9fbff;
+  --aqua: #34e0f0;
+  --aqua-2: #7ff6ff;
+  --sand: #ffe3a8;
+  --sunset: #ff8a4c;
+  --coral: #ff5a6e;
+  --gold: #ffc94a;
+  --text: #f2fdff;
+  --muted: #a9d6e6;
+  --green: #1fd18a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.3 "Trebuchet MS", system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+body { /* faint drifting caustics, drawn with gradients only */
+  background:
+    radial-gradient(120% 60% at 20% 110%, rgba(52, 224, 240, 0.10), transparent 60%),
+    radial-gradient(90% 50% at 90% 70%, rgba(11, 111, 164, 0.25), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+.game {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 10px calc(16px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── sticky game screen ── */
+.sticky {
+  --top-h: calc(58px + env(safe-area-inset-top, 0px)); /* the bar floating over the scene */
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin: 0 -10px;
+  padding: 0 0 8px;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sticky::after { /* soft edge where the fixed screen meets the page below */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -18px;
+  height: 18px;
+  background: linear-gradient(180deg, var(--bg), rgba(var(--bg-rgb), 0));
+  pointer-events: none;
+}
+
+/* the top bar floats over the scene's sky */
+.top {
+  position: absolute;
+  z-index: 4;
+  top: calc(8px + env(safe-area-inset-top, 0px));
+  left: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.round-btn {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.75);
+  background: rgba(3, 26, 44, 0.62);
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+}
+
+.round-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* wordmark: a code-drawn sun + curl mark and a two-line "SURF / WAVE" */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: auto;
+  min-width: 0;
+  filter: drop-shadow(0 2px 4px rgba(0, 20, 40, 0.45));
+}
+
+.logo__mark {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+}
+
+.logo__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 0.86;
+  transform: skewX(-8deg);
+}
+
+.logo__text b {
+  font-size: 21px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  background: linear-gradient(180deg, #fff6c8 0%, var(--gold) 45%, var(--sunset) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 1.5px 0 #06375e) drop-shadow(0 0 1px #06375e);
+}
+
+.logo__text i {
+  font-style: normal;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 5.2px;
+  color: #fff;
+  text-shadow: 0 1px 0 #06375e, 0 0 6px rgba(6, 55, 94, 0.9), 0 0 10px rgba(52, 224, 240, 0.6);
+}
+
+.wallet {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 5px 4px 13px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  background: linear-gradient(180deg, rgba(8, 72, 112, 0.78), rgba(3, 30, 52, 0.82));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  min-width: 0;
+}
+
+.wallet__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.wallet strong {
+  font-size: 15px;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.wallet__sound {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.wallet__sound svg {
+  width: 18px;
+  height: 18px;
+}
+
+.wallet__sound[aria-pressed="false"] {
+  opacity: 0.45;
+}
+
+/* ── stage ── */
+/* Full-bleed scene: edge to edge, up under the top bar and down behind the results row.
+   The game itself stays clear; the scene only melts into the page below the play area. */
+.stage {
+  position: relative;
+  width: 100%;
+  height: min(calc(min(100vw, 720px) * 9 / 11 + var(--top-h) + 62px), 60vh);
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.stage::after { /* only below the play area (--below, set by app.js): no edge, game untouched */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  height: var(--below, 0px);
+  background: linear-gradient(180deg, rgba(var(--bg-rgb), 0), var(--bg));
+  pointer-events: none;
+}
+
+.stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.stage__center { /* placed on the play area by app.js (left/top/width/height) */
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  top: var(--top-h);
+  width: 100%;
+  height: calc(100% - var(--top-h));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 24%; /* in the sky above the wave */
+  pointer-events: none;
+  text-align: center;
+}
+
+.mult {
+  font-size: clamp(42px, 13vw, 80px);
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: -1px;
+  color: #fff;
+  text-shadow: 0 3px 0 rgba(4, 50, 90, 0.7), 0 8px 26px rgba(0, 30, 60, 0.5);
+  font-variant-numeric: tabular-nums;
+}
+
+.mult--crashed {
+  color: #ff6b7d;
+  text-shadow: 0 3px 0 rgba(90, 10, 30, 0.6), 0 8px 26px rgba(0, 0, 0, 0.45);
+}
+
+.flew {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 20, 40, 0.7);
+}
+
+.hint {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0, 20, 40, 0.7);
+}
+
+.conn {
+  position: absolute;
+  z-index: 3;
+  top: calc(var(--top-h) + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 90, 110, 0.92);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ── history: a string of buoys ── */
+.history {
+  position: absolute; /* floats over the bottom of the scene */
+  z-index: 3;
+  left: 10px;
+  right: 10px;
+  bottom: 14px;
+  border-radius: 999px;
+  padding: 5px;
+  background: rgba(3, 26, 44, 0.66);
+  border: 1px solid rgba(127, 246, 255, 0.35);
+  overflow: hidden;
+}
+
+.history__track {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.history__track::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  flex-shrink: 0;
+  min-width: 54px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  background: linear-gradient(180deg, #ff7a8a, #d63a55);
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.chip--mid {
+  background: linear-gradient(180deg, #4fe8f5, #0b8fc0);
+}
+
+.chip--big {
+  background: linear-gradient(180deg, #ffe58a, #ff9a3d);
+  color: #4a2200;
+}
+
+/* ── bet panels: glossy resin surfboard decks ── */
+.panels {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.panel[data-slot="1"] { /* phone: one panel only */
+  display: none;
+}
+
+.panel {
+  position: relative;
+  padding: 0;
+}
+
+.deck {
+  position: relative;
+  overflow: hidden;
+  border-radius: 46px 46px 34px 34px / 40px 40px 30px 30px; /* nose-and-tail board outline */
+  padding: 14px 14px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  background:
+    linear-gradient(90deg, transparent calc(50% - 1px), rgba(255, 255, 255, 0.12) calc(50% - 1px), rgba(255, 255, 255, 0.12) calc(50% + 1px), transparent calc(50% + 1px)), /* stringer */
+    linear-gradient(170deg, #1fb7d6 0%, #0a7fb0 38%, #075a88 100%);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.35),
+    inset 0 -6px 14px rgba(0, 30, 60, 0.35),
+    0 10px 24px rgba(0, 10, 25, 0.45);
+  border: 2px solid rgba(255, 255, 255, 0.55);
+}
+
+.deck::before { /* resin gloss */
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 30%;
+  top: 4px;
+  height: 36%;
+  border-radius: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+
+.deck__head {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.deck__fin {
+  width: 14px;
+  height: 14px;
+}
+
+/* the stake on a wax pad (dotted grip texture) */
+.stepper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: min(100%, 270px);
+  padding: 5px;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 2px 2px, rgba(255, 255, 255, 0.22) 1px, transparent 1.6px) 0 0 / 7px 7px,
+    linear-gradient(180deg, #fff1cc, #f5cf86);
+  box-shadow: inset 0 2px 4px rgba(120, 70, 10, 0.35), 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.stepper input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  text-align: center;
+  font-size: 21px;
+  font-weight: 900;
+  color: #3b2004;
+  outline: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.stepper__btn {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #0a7fb0, #05507c);
+  color: #fff;
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.stepper__btn:active {
+  transform: scale(0.94);
+}
+
+/* quick amounts: scallop shells */
+.quick {
+  position: relative;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.quick button {
+  min-width: 60px;
+  height: 40px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 50% 50% 14px 14px / 70% 70% 14px 14px;
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0) 0 7px, rgba(255, 255, 255, 0.22) 7px 8px),
+    linear-gradient(180deg, #fff6e6, #ffc9a8);
+  color: #6b2b12;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: inset 0 -2px 0 rgba(160, 70, 30, 0.25), 0 2px 6px rgba(0, 20, 40, 0.25);
+}
+
+.quick button:active {
+  transform: translateY(1px) scale(0.97);
+}
+
+/* the action button: a breaking wave curl rolling across */
+.action {
+  position: relative;
+  overflow: hidden;
+  width: min(100%, 300px);
+  min-height: 70px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffd166, #ff8a3d);
+  color: #fff;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 1.1;
+  text-shadow: 0 1px 2px rgba(120, 40, 0, 0.55);
+  box-shadow: 0 6px 18px rgba(255, 138, 61, 0.45), inset 0 2px 0 rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  isolation: isolate;
+}
+
+.action::before { /* rolling wave band along the bottom of the button */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 46%;
+  z-index: -1;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 20'%3E%3Cpath d='M0 10 Q10 0 20 10 T40 10 T60 10 T80 10 V20 H0z' fill='%23ffffff' fill-opacity='.28'/%3E%3C/svg%3E") 0 0 / 80px 100% repeat-x;
+  animation: curl 2.4s linear infinite;
+}
+
+@keyframes curl {
+  to { background-position: 80px 0; }
+}
+
+.action__label {
+  display: block;
+}
+
+.action small {
+  display: block;
+  font-size: 24px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.action--cashout {
+  background: linear-gradient(180deg, #5ff5b4, var(--green));
+  box-shadow: 0 6px 22px rgba(31, 209, 138, 0.55), inset 0 2px 0 rgba(255, 255, 255, 0.45);
+  text-shadow: 0 1px 2px rgba(0, 80, 40, 0.55);
+}
+
+.action--cashout::before {
+  animation-duration: 0.9s;
+}
+
+.action--waiting,
+.action:disabled {
+  background: linear-gradient(180deg, #5b8fae, #3d6d8c);
+  box-shadow: none;
+  cursor: default;
+}
+
+.action--waiting::before,
+.action:disabled::before {
+  animation-play-state: paused;
+}
+
+.action--cancel {
+  background: linear-gradient(180deg, #ff8090, var(--coral));
+  box-shadow: 0 6px 18px rgba(255, 90, 110, 0.4);
+}
+
+.action--cancel small,
+.action--waiting small {
+  font-size: 14px;
+}
+
+/* auto cash-out: a fin-shaped knob on a leash track */
+.auto {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 14px;
+  color: #fff;
+}
+
+.switch {
+  position: relative;
+  display: inline-flex;
+  padding: 4px 0; /* a 40 px tap target */
+  cursor: pointer;
+}
+
+.switch input {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  cursor: pointer;
+  z-index: 1;
+}
+
+.switch__track {
+  width: 58px;
+  height: 32px;
+  border-radius: 999px;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  background: rgba(3, 26, 44, 0.55);
+  padding: 3px;
+  display: flex;
+  align-items: flex-end;
+  transition: background 0.2s;
+}
+
+.switch__knob { /* a little surf fin */
+  width: 22px;
+  height: 22px;
+  border-radius: 60% 40% 4px 4px / 90% 70% 4px 4px;
+  background: var(--sand);
+  transition: transform 0.25s cubic-bezier(0.3, 1.4, 0.5, 1), background 0.2s;
+}
+
+.switch input:checked + .switch__track {
+  background: var(--aqua);
+}
+
+.switch input:checked + .switch__track .switch__knob {
+  background: #fff;
+  transform: translateX(26px);
+}
+
+.switch input:focus-visible + .switch__track {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.auto__x {
+  width: 76px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1.5px solid rgba(255, 255, 255, 0.7);
+  background: rgba(3, 26, 44, 0.4);
+  text-align: center;
+  font-weight: 800;
+  outline: none;
+}
+
+/* ── bets: the lineup ── */
+.bets {
+  border-radius: 26px;
+  padding: 10px;
+  background: linear-gradient(180deg, rgba(10, 79, 124, 0.85), rgba(3, 30, 52, 0.92));
+  border: 1px solid rgba(127, 246, 255, 0.25);
+  box-shadow: 0 10px 30px rgba(0, 10, 25, 0.35);
+}
+
+.bets__head {
+  border-radius: 20px;
+  padding: 10px 12px;
+  background: linear-gradient(180deg, var(--sand), #ffc27a);
+  color: #4a2200;
+}
+
+.bets__tabs {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.bets__tab {
+  flex: 1;
+  max-width: 150px;
+  height: 40px;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(122, 64, 10, 0.18);
+  color: #6b3a08;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.bets__tab--on {
+  background: linear-gradient(180deg, #0a7fb0, #05507c);
+  color: #fff;
+}
+
+.bets__count {
+  margin-top: 8px;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 13px;
+  text-align: center;
+}
+
+.bets__cols,
+.row {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 0.8fr 1fr;
+  gap: 6px;
+  align-items: center;
+}
+
+.bets__cols {
+  margin: 10px 0 6px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(127, 246, 255, 0.12);
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.bets__cols span:not(:first-child),
+.row span:not(:first-child) {
+  text-align: center;
+}
+
+.bets__list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.row {
+  padding: 7px 10px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.row--cashed {
+  background: linear-gradient(90deg, rgba(31, 209, 138, 0.42), rgba(31, 209, 138, 0.2));
+}
+
+.row--mine {
+  outline: 2px solid var(--gold);
+}
+
+.row__user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.row__user span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* player badge: their initial over a sun-and-sea disc in their own colours */
+.avatar {
+  position: relative;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-style: normal;
+  font-weight: 900;
+  font-size: 13px;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  overflow: hidden;
+}
+
+.row__x {
+  font-weight: 800;
+  color: var(--aqua-2);
+}
+
+.row__win {
+  font-weight: 800;
+}
+
+.empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 16px 0 10px;
+}
+
+.fair {
+  margin: 12px 4px 0;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  text-decoration: underline dotted;
+  cursor: pointer;
+}
+
+.fair__detail {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 4px 6px 0;
+}
+
+.fair__detail p {
+  margin: 10px 0 4px;
+}
+
+.fair__detail code {
+  display: block;
+  word-break: break-all;
+  font: 11px ui-monospace, Menlo, monospace;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: #fff;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.fair__detail a {
+  color: var(--aqua-2);
+}
+
+/* small phones: keep the bar on one line */
+@media (max-width: 380px) {
+  .logo__mark { width: 32px; height: 32px; }
+  .logo__text b { font-size: 18px; }
+  .logo__text i { font-size: 11px; letter-spacing: 4.4px; }
+  .wallet { padding-left: 10px; gap: 4px; }
+  .wallet strong { font-size: 14px; }
+}
+
+/* ── wide screens: bets list on the left, game + two panels side by side ── */
+@media (min-width: 900px) {
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .game {
+    max-width: none;
+    height: 100vh;
+    padding: 0;
+    display: grid;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    grid-template-columns: minmax(280px, 24%) minmax(0, 1fr); /* right column may shrink: no sideways overflow */
+    grid-template-rows: minmax(0, 1fr) auto auto; /* play area · results · bet panels */
+    gap: 0 14px;
+  }
+
+  .sticky,
+  .panels,
+  .bets {
+    min-width: 0;
+  }
+
+  .sticky::after {
+    display: none;
+  }
+
+  .sticky {
+    display: contents;
+  }
+
+  .stage { /* behind everything: the bets list, results row and panels float over it */
+    grid-column: 1 / 3;
+    grid-row: 1 / 4;
+    height: 100vh;
+  }
+
+  .top {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .stage::after { /* below the play area the scene melts away behind the results and panels */
+    background: linear-gradient(180deg, rgba(var(--bg-rgb), 0) 0, rgba(var(--bg-rgb), 0.75) 60px, var(--bg) 100px);
+  }
+
+  .stage__edges { /* behind the bets list (left of the play area, --left set by app.js) the scene melts away */
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    width: calc(var(--left, 0px) + 40px);
+    right: auto;
+    background: linear-gradient(90deg, var(--bg) 0, var(--bg) calc(100% - 140px), rgba(var(--bg-rgb), 0.7) calc(100% - 60px), rgba(var(--bg-rgb), 0) 100%);
+  }
+
+  .history {
+    grid-column: 2;
+    grid-row: 2;
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    z-index: 3;
+    margin: 0 12px 10px 24px;
+  }
+
+  .bets {
+    grid-column: 1;
+    grid-row: 1 / 4;
+    position: relative;
+    z-index: 3;
+    min-height: 0;
+    margin: 12px 0 12px 12px;
+    overflow-y: auto;
+  }
+
+  .panels {
+    grid-column: 2;
+    grid-row: 3;
+    position: relative;
+    z-index: 3;
+    margin: 0 12px 12px 24px;
+    align-self: start;
+    flex-direction: row;
+    gap: 12px;
+  }
+
+  .panel,
+  .panel[data-slot="1"] {
+    display: block;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .deck {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(110px, 11vw, 210px);
+    grid-template-areas: "head head" "stepper action" "quick action" "autocash autocash";
+    justify-content: center;
+    align-items: center;
+    gap: 8px 14px;
+    padding: 10px 16px 12px;
+    border-radius: 60px 60px 40px 40px / 44px 44px 32px 32px;
+  }
+
+  .deck__head {
+    grid-area: head;
+    justify-self: center;
+  }
+
+  .stepper {
+    grid-area: stepper;
+    width: 100%;
+    max-width: 280px;
+    justify-self: center;
+  }
+
+  .quick {
+    grid-area: quick;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 5px;
+    width: 100%;
+    max-width: 300px;
+    justify-self: center;
+  }
+
+  .quick button {
+    min-width: 0;
+    padding: 0 2px;
+    font-size: clamp(12px, 0.95vw, 15px);
+  }
+
+  .action {
+    grid-area: action;
+    width: 100%;
+    min-height: 96px;
+    border-radius: 28px;
+  }
+
+  .auto {
+    grid-area: autocash; /* not "auto": that word is a CSS keyword, not the named row */
+    justify-self: center;
+  }
+}
+
+/* ── toast ── */
+.toast {
+  position: fixed;
+  left: 50%;
+  top: calc(60px + env(safe-area-inset-top, 0px));
+  transform: translateX(-50%);
+  z-index: 20;
+  max-width: calc(100% - 32px);
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: var(--deep);
+  border: 2px solid var(--aqua);
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.toast--win {
+  background: linear-gradient(180deg, #2fe39a, #0f9e64);
+  border-color: #c4ffe6;
+}
+
+.toast--error {
+  background: linear-gradient(180deg, #ff6b7d, #c62a45);
+  border-color: #ffc2cb;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .action::before { animation: none; }
+}

@@ -9,6 +9,7 @@ import oghRoutes from "./routes/oghRoutes.js";
 import partnerRoutes from "./routes/partnerRoutes.js";
 import { websocketRelayService } from "./services/websocketRelayService.js";
 import { seamlessWalletService } from "./services/seamlessWalletService.js";
+import { GAMES_CATALOG } from "./config/gamesCatalog.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,14 +27,20 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // 2. Health & Status
-app.get("/health", (req, res) => {
+app.get(["/health", "/status"], (req, res) => {
   res.json({
     status: "ok",
+    ok: true,
+    active: true,
     service: "NexoRNG Engine",
     activeSessions: seamlessWalletService.sessions.size,
-    upstreamConnected: websocketRelayService.upstreamConnected,
     timestamp: new Date().toISOString()
   });
+});
+
+// Direct compatibility alias for /games -> /ogh/games
+app.get("/games", (req, res) => {
+  res.json({ status: true, data: GAMES_CATALOG });
 });
 
 // 3. API Routes

@@ -1,0 +1,1384 @@
+/* Dragon Ascent — NEXORNG original crash game. Ink-jade lacquer, gold trim, vermilion seals. */
+:root {
+  --bg: #0b2026;
+  --bg-0: rgba(11, 32, 38, 0);
+  --panel: #14363c;
+  --panel-2: #0c242a;
+  --gold: #e3b04e;
+  --gold-2: #ffe293;
+  --jade: #46d8ab;
+  --jade-2: #1c9a80;
+  --seal: #e0532f;
+  --seal-2: #a92c16;
+  --ink: #071518;
+  --text: #f2fbf7;
+  --muted: #9fc9bf;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.3 "Avenir Next", "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+body { /* faint wave-cloud lacquer pattern, drawn in CSS */
+  background:
+    radial-gradient(circle at 0 100%, transparent 13px, rgba(70, 216, 171, 0.05) 14px, rgba(70, 216, 171, 0.05) 15px, transparent 16px) 0 0 / 32px 18px,
+    radial-gradient(circle at 100% 100%, transparent 13px, rgba(70, 216, 171, 0.05) 14px, rgba(70, 216, 171, 0.05) 15px, transparent 16px) 0 0 / 32px 18px,
+    var(--bg);
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+.game {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 10px calc(16px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── sticky game screen ── */
+.sticky {
+  --top-h: calc(58px + env(safe-area-inset-top, 0px)); /* the bar floating over the scene */
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin: 0 -10px;
+  padding: 0 0 8px;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sticky::after { /* soft edge where the fixed screen meets the page below */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -18px;
+  height: 18px;
+  background: linear-gradient(180deg, var(--bg), var(--bg-0));
+  pointer-events: none;
+}
+
+/* the top bar floats over the scene's sky */
+.top {
+  position: absolute;
+  z-index: 4;
+  top: calc(8px + env(safe-area-inset-top, 0px));
+  left: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.round-btn {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid var(--gold);
+  background: radial-gradient(circle at 50% 35%, #1d4a50, var(--ink));
+  color: var(--gold-2);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+.round-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* wordmark: our own mark + lettering, drawn in SVG / CSS */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  margin-right: auto;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45));
+}
+
+.logo__mark {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+}
+
+.logo__text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+  min-width: 0;
+}
+
+.logo__text b {
+  font: 900 clamp(14px, 4.2vw, 19px)/1 Georgia, "Times New Roman", serif;
+  letter-spacing: 0.08em;
+  background: linear-gradient(180deg, #fff4c4 10%, var(--gold) 60%, #b4741c);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-stroke: 0.4px rgba(60, 30, 0, 0.5);
+}
+
+.logo__text i {
+  margin-top: 2px;
+  font-style: normal;
+  font-weight: 800;
+  font-size: clamp(8px, 2.4vw, 10.5px);
+  letter-spacing: 0.42em;
+  color: #8ff3d2;
+}
+
+.wallet {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 4px 5px 4px 12px;
+  border-radius: 999px;
+  border: 1.5px solid var(--gold);
+  background: linear-gradient(180deg, rgba(20, 54, 60, 0.92), rgba(7, 21, 24, 0.92));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+.wallet__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.wallet strong {
+  font-size: 15px;
+  color: var(--gold-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.wallet__sound {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(70, 216, 171, 0.16);
+  color: #c9fbe9;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+}
+
+.wallet__sound svg {
+  width: 17px;
+  height: 17px;
+}
+
+.wallet__sound[aria-pressed="false"] {
+  opacity: 0.45;
+}
+
+/* ── stage ── */
+/* Full-bleed scene: edge to edge, up under the top bar and down behind the results row.
+   The game itself stays clear; the scene only melts into the page below the play area. */
+.stage {
+  position: relative;
+  width: 100%;
+  height: min(calc(min(100vw, 720px) * 0.9 + var(--top-h) + 62px), 62vh);
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.stage::after { /* only below the play area (--below, set by app.js): the game stays untouched */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  height: var(--below, 0px);
+  background: linear-gradient(180deg, var(--bg-0), var(--bg));
+  pointer-events: none;
+}
+
+.stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.stage__center { /* placed on the play area by app.js (left/top/width/height) */
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  top: var(--top-h);
+  width: 100%;
+  height: calc(100% - var(--top-h));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  text-align: center;
+}
+
+.mult {
+  font: 900 clamp(42px, 13vw, 84px)/1 "Avenir Next", "Segoe UI", -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  letter-spacing: -1px;
+  color: #fff;
+  text-shadow: 0 3px 0 rgba(7, 40, 44, 0.7), 0 0 26px rgba(70, 216, 171, 0.45), 0 8px 24px rgba(0, 0, 0, 0.4);
+  font-variant-numeric: tabular-nums;
+}
+
+.mult--crashed {
+  color: #ff6a45;
+  text-shadow: 0 3px 0 rgba(60, 10, 0, 0.7), 0 0 26px rgba(255, 90, 50, 0.5), 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.flew {
+  margin-bottom: 4px;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: rgba(7, 21, 24, 0.55);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.hint {
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+}
+
+.conn {
+  position: absolute;
+  z-index: 3;
+  top: calc(var(--top-h) + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(169, 44, 22, 0.92);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ── history (results row: jade tags) ── */
+.history {
+  position: absolute; /* floats over the bottom of the scene */
+  z-index: 3;
+  left: 10px;
+  right: 10px;
+  bottom: 14px;
+  border-radius: 14px;
+  padding: 6px;
+  background: linear-gradient(180deg, rgba(20, 54, 60, 0.88), rgba(7, 21, 24, 0.9));
+  border: 1px solid rgba(227, 176, 78, 0.5);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.history__track {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.history__track::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  flex-shrink: 0;
+  min-width: 54px;
+  padding: 4px 9px;
+  border-radius: 8px 3px 8px 3px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  background: rgba(159, 201, 191, 0.14);
+  color: #cfe6e0;
+}
+
+.chip--mid {
+  background: linear-gradient(180deg, #3ee0b0, var(--jade-2));
+  color: #04221c;
+}
+
+.chip--big {
+  background: linear-gradient(180deg, var(--gold-2), #d8952a);
+  color: #3a2000;
+}
+
+/* ── bet shrines (two bets per round on wide screens) ──
+   A carved jade frame around black lacquer with gold cloud-scroll bands; the stake on a red
+   lacquer plaque between jade beads, quick amounts as cash coins strung on a red silk cord,
+   a hanging lantern for auto cash-out with a paper-scroll multiplier, and the dragon's pearl
+   held in its claw as the Bet / Cash Out button (blazing gold while it can be cashed). */
+.panels {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* phone: one shrine only */
+.panel[data-slot="1"] {
+  display: none;
+}
+
+.panel {
+  --pearl: clamp(100px, 30vw, 132px);
+  position: relative;
+  padding: 6px;
+  border-radius: 20px;
+  /* jade stone: a deep green body with pale veins and a carved, bevelled edge */
+  background:
+    radial-gradient(120% 60% at 15% 0, rgba(200, 255, 235, 0.28), transparent 55%),
+    radial-gradient(60% 120% at 100% 100%, rgba(0, 30, 24, 0.55), transparent 60%),
+    repeating-linear-gradient(118deg, transparent 0 22px, rgba(220, 255, 240, 0.07) 23px 24px, transparent 25px 47px),
+    linear-gradient(160deg, #3fb595, #178066 38%, #0e5a4b 70%, #1f8a71);
+  box-shadow:
+    inset 0 1.5px 0 rgba(230, 255, 245, 0.55),
+    inset 0 -2px 0 rgba(0, 40, 30, 0.6),
+    inset 0 0 0 1px rgba(0, 40, 30, 0.5),
+    0 10px 26px rgba(0, 0, 0, 0.45);
+}
+
+.panel__inner { /* black lacquer, gold-lined, with a cloud-scroll band top and bottom */
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) var(--pearl);
+  align-items: center;
+  gap: 10px;
+  padding: 15px 10px 13px;
+  border-radius: 15px;
+  background:
+    radial-gradient(90% 70% at 80% 50%, rgba(70, 216, 171, 0.12), transparent 70%),
+    radial-gradient(70% 90% at 0 0, rgba(169, 44, 22, 0.16), transparent 60%),
+    linear-gradient(180deg, #0d1a1b, #060d0e);
+  box-shadow:
+    inset 0 0 0 1px rgba(227, 176, 78, 0.85),
+    inset 0 0 0 3px #060d0e,
+    inset 0 0 0 3.6px rgba(227, 176, 78, 0.35),
+    inset 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+.panel__inner::before,
+.panel__inner::after { /* gold cloud-scroll (xiangyun) bands */
+  content: "";
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  height: 8px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 8'%3E%3Cpath d='M0 6.6h4.2c2.6 0 3.6-1.3 3.6-2.8 0-1.6 2.3-2.4 3.3-1 .8 1.1-.2 2.5-1.5 2.1M10.5 6.6H20' fill='none' stroke='%23e3b04e' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E") repeat-x 0 0 / 20px 8px;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.panel__inner::before {
+  top: 4px;
+}
+
+.panel__inner::after {
+  bottom: 3px;
+  transform: scale(-1, -1);
+}
+
+.panel__tag { /* the vermilion chop over the frame's top edge (wide screens: I / II) */
+  display: none;
+  position: absolute;
+  z-index: 2;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-3deg);
+  padding: 3px 10px 2px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #e8603a, var(--seal-2));
+  box-shadow: inset 0 0 0 1.5px rgba(255, 226, 147, 0.85), inset 0 0 0 3px var(--seal-2), 0 3px 8px rgba(0, 0, 0, 0.4);
+  font: 900 10px/1.2 Georgia, "Times New Roman", serif;
+  letter-spacing: 0.22em;
+  color: #fff1d8;
+  white-space: nowrap;
+}
+
+.panel__controls {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* the stake: a red lacquer plaque between two jade beads */
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stepper__btn { /* translucent jade beads, the sign carved in */
+  width: 42px;
+  height: 42px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 28%, rgba(255, 255, 255, 0.95) 0, rgba(225, 255, 244, 0.7) 9%, transparent 22%),
+    radial-gradient(circle at 60% 72%, rgba(160, 255, 220, 0.5), transparent 45%),
+    radial-gradient(circle at 45% 40%, #74e6c0, #22a184 50%, #0b5546 88%, #063a30);
+  color: #04362c;
+  font: 900 24px/1 "Avenir Next", "Segoe UI", Roboto, Arial, sans-serif;
+  text-shadow: 0 1px 0 rgba(210, 255, 238, 0.6), 0 -1px 0 rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 -3px 6px rgba(0, 40, 30, 0.55), 0 3px 6px rgba(0, 0, 0, 0.5), 0 0 0 1.5px rgba(227, 176, 78, 0.6);
+  cursor: pointer;
+  transition: transform 0.14s;
+}
+
+.stepper__btn:active {
+  transform: scale(0.88) rotate(25deg);
+}
+
+.plaque {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 46px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 5px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent 45%),
+    radial-gradient(80% 120% at 50% 100%, rgba(60, 0, 0, 0.45), transparent 70%),
+    linear-gradient(180deg, #c8401f, #9c2611 55%, #6d170a);
+  box-shadow:
+    inset 0 0 0 1.5px var(--gold),
+    inset 0 0 0 3.5px #6d170a,
+    inset 0 0 0 4.3px rgba(255, 226, 147, 0.55),
+    0 3px 8px rgba(0, 0, 0, 0.5);
+  cursor: text;
+}
+
+.plaque::before,
+.plaque::after { /* little gold studs on the plaque's ends */
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 5px;
+  height: 5px;
+  margin-top: -2.5px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff3c0, var(--gold) 60%, #8a5410);
+}
+
+.plaque::before {
+  left: 8px;
+}
+
+.plaque::after {
+  right: 8px;
+}
+
+.plaque__cap {
+  font: 800 8.5px/1 "Avenir Next", "Segoe UI", Roboto, Arial, sans-serif;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: rgba(255, 226, 147, 0.85);
+}
+
+.plaque input {
+  width: 100%;
+  min-width: 0;
+  padding: 0 14px;
+  border: 0;
+  background: transparent;
+  text-align: center;
+  font: 800 20px/1.15 Georgia, "Times New Roman", serif;
+  color: #ffe9b0;
+  text-shadow: 0 1px 0 rgba(60, 0, 0, 0.8);
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+
+.plaque:focus-within {
+  box-shadow:
+    inset 0 0 0 1.5px var(--gold-2),
+    inset 0 0 0 3.5px #6d170a,
+    inset 0 0 0 4.3px rgba(255, 226, 147, 0.9),
+    0 0 12px rgba(255, 200, 90, 0.45);
+}
+
+/* quick amounts: cash coins threaded on a red silk cord */
+.quick {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.quick::before { /* the cord, running through every coin's square hole */
+  content: "";
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  top: 15.5px;
+  height: 3px;
+  border-radius: 2px;
+  background: repeating-linear-gradient(115deg, #e0472b 0 3px, #9c2611 3px 5px);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.quick button {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 40px;
+  max-width: 64px;
+  height: 52px;
+  padding: 0;
+  border: 0;
+  background: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  cursor: pointer;
+}
+
+.coin {
+  display: block;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Cdefs%3E%3CradialGradient id='g' cx='.38' cy='.3' r='.8'%3E%3Cstop offset='0' stop-color='%23fff4c2'/%3E%3Cstop offset='.45' stop-color='%23e3ae48'/%3E%3Cstop offset='1' stop-color='%23855010'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='20' cy='20' r='19' fill='url(%23g)' stroke='%235e3606' stroke-width='1'/%3E%3Ccircle cx='20' cy='20' r='15.2' fill='none' stroke='%238a5a14' stroke-width='1.1' opacity='.75'/%3E%3Crect x='14.2' y='14.2' width='11.6' height='11.6' fill='none' stroke='%238a5a14' stroke-width='1.4'/%3E%3Crect x='15.8' y='15.8' width='8.4' height='8.4' fill='%23240b05'/%3E%3Crect x='15.8' y='18.3' width='8.4' height='3.4' fill='%23d4402a'/%3E%3Cpath d='M20 6.8v3.4M20 29.8v3.4M6.8 20h3.4M29.8 20h3.4' stroke='%238a5a14' stroke-width='1.7' stroke-linecap='round'/%3E%3C/svg%3E") center / 100% 100% no-repeat;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.55));
+  transition: transform 0.18s cubic-bezier(0.3, 1.5, 0.5, 1), filter 0.2s;
+}
+
+.coin__value {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: #c9e9df;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.quick button:active .coin {
+  transform: rotate(-30deg) scale(0.92);
+}
+
+.quick button.quick--on .coin { /* the chosen coin lifts off the cord and glints */
+  transform: translateY(-2px) rotate(45deg);
+  filter: drop-shadow(0 0 6px rgba(255, 214, 110, 0.9)) drop-shadow(0 3px 2px rgba(0, 0, 0, 0.5));
+}
+
+.quick button.quick--on .coin__value {
+  color: var(--gold-2);
+}
+
+/* auto cash-out: a hanging lantern switch and a paper-scroll multiplier */
+.auto {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+
+.switch {
+  position: relative;
+  width: 42px;
+  height: 44px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.switch input {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.lantern { /* cord + gold caps + ribbed paper body + tassel; swings from its cord */
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 0;
+}
+
+.lantern::before { /* cord and top cap */
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 16px;
+  height: 9px;
+  margin-left: -8px;
+  background:
+    linear-gradient(var(--gold), var(--gold)) 50% 0 / 1.6px 5px no-repeat,
+    linear-gradient(180deg, #ffe293, #a8701c) 50% 100% / 16px 4px no-repeat;
+}
+
+.lantern::after { /* bottom cap and tassel */
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 14px;
+  height: 9px;
+  margin-left: -7px;
+  background:
+    linear-gradient(180deg, #ffe293, #a8701c) 50% 0 / 14px 3px no-repeat,
+    repeating-linear-gradient(90deg, #d4402a 0 1.4px, transparent 1.4px 2.6px) 50% 100% / 6px 6px no-repeat;
+}
+
+.lantern__body {
+  position: absolute;
+  left: 50%;
+  top: 8px;
+  width: 32px;
+  height: 27px;
+  margin-left: -16px;
+  border-radius: 50% / 46%;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 5px, rgba(0, 0, 0, 0.28) 5px 6px),
+    radial-gradient(circle at 50% 45%, #8a2a18, #4f140a 70%, #320b05);
+  box-shadow: inset 0 -3px 5px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(227, 176, 78, 0.4);
+  transition: background 0.3s, box-shadow 0.3s;
+}
+
+.switch input:checked + .lantern {
+  animation: lantern-swing 0.9s ease-out;
+}
+
+.switch input:checked + .lantern .lantern__body { /* lit: a warm flame inside the paper */
+  background:
+    repeating-linear-gradient(90deg, transparent 0 5px, rgba(120, 30, 0, 0.3) 5px 6px),
+    radial-gradient(circle at 50% 50%, #fff3c2, #ffb347 30%, #f0612e 62%, #a92c16);
+  box-shadow: inset 0 -3px 5px rgba(120, 20, 0, 0.35), inset 0 0 0 1px rgba(255, 226, 147, 0.7), 0 0 14px rgba(255, 140, 50, 0.75), 0 0 30px rgba(255, 120, 40, 0.35);
+  animation: lantern-flicker 2.4s ease-in-out infinite;
+}
+
+.switch input:focus-visible + .lantern {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+@keyframes lantern-swing {
+  0% { transform: rotate(0); }
+  20% { transform: rotate(12deg); }
+  45% { transform: rotate(-8deg); }
+  70% { transform: rotate(4deg); }
+  100% { transform: rotate(0); }
+}
+
+@keyframes lantern-flicker {
+  0%, 100% { filter: brightness(1); }
+  30% { filter: brightness(1.12); }
+  55% { filter: brightness(0.94); }
+  75% { filter: brightness(1.06); }
+}
+
+.auto__label {
+  flex-shrink: 0;
+  font-size: 10.5px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.scroll { /* paper scroll between two lacquered rollers */
+  position: relative;
+  flex: 1;
+  min-width: 66px;
+  max-width: 120px;
+  height: 40px;
+  margin: 0 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.35), transparent 30%, rgba(120, 80, 20, 0.15)),
+    linear-gradient(90deg, #d9c08a, #f4e6c2 18%, #f7ecd0 50%, #f4e6c2 82%, #d9c08a);
+  box-shadow: inset 0 0 0 1px rgba(120, 80, 20, 0.35), 0 2px 5px rgba(0, 0, 0, 0.45);
+  transition: filter 0.25s, opacity 0.25s;
+}
+
+.scroll::before,
+.scroll::after { /* rollers with gold knobs */
+  content: "";
+  position: absolute;
+  top: -4px;
+  bottom: -4px;
+  width: 7px;
+  border-radius: 3px;
+  background:
+    linear-gradient(var(--gold), var(--gold)) 0 0 / 100% 3px no-repeat,
+    linear-gradient(var(--gold), var(--gold)) 0 100% / 100% 3px no-repeat,
+    linear-gradient(90deg, #5e1a0e, #b8371c 45%, #5e1a0e);
+}
+
+.scroll::before {
+  left: -6px;
+}
+
+.scroll::after {
+  right: -6px;
+}
+
+.auto__x {
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  padding: 0 0 0 6px;
+  border: 0;
+  background: transparent;
+  text-align: right;
+  font: 800 17px/1 Georgia, "Times New Roman", serif;
+  color: #2a1406;
+  font-variant-numeric: tabular-nums;
+  outline: none;
+}
+
+.scroll i {
+  flex: 0 0 auto;
+  width: 40%;
+  padding-left: 2px;
+  font: 800 15px/1 Georgia, "Times New Roman", serif;
+  font-style: normal;
+  color: #a92c16;
+}
+
+.auto:has(.auto__on:not(:checked)) .scroll { /* the scroll fades while the lantern is dark */
+  filter: saturate(0.4) brightness(0.72);
+}
+
+/* the dragon's pearl, held in its claw: Bet (jade-white glow) · Cash Out (blazing gold) */
+.pearl {
+  position: relative;
+  width: var(--pearl);
+  height: var(--pearl);
+  justify-self: center;
+}
+
+.action {
+  position: absolute;
+  left: 7%;
+  top: 4%;
+  width: 86%;
+  height: 86%;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #053a30;
+  font: 900 max(13px, calc(var(--pearl) * 0.155))/1.05 Georgia, "Times New Roman", serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: transform 0.12s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.action::before { /* the halo of flame-wisps around the pearl */
+  content: "";
+  --spin: 0deg; /* browsers without @property: a still halo */
+  position: absolute;
+  inset: -11%;
+  z-index: -2;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from var(--spin), rgba(127, 240, 200, 0) 0deg 9deg, rgba(127, 240, 200, 0.55) 15deg, rgba(127, 240, 200, 0) 24deg);
+  -webkit-mask: radial-gradient(circle, transparent 55%, #000 62%, rgba(0, 0, 0, 0.6) 78%, transparent 100%);
+  mask: radial-gradient(circle, transparent 55%, #000 62%, rgba(0, 0, 0, 0.6) 78%, transparent 100%);
+  animation: pearl-spin 14s linear infinite;
+}
+
+.action::after { /* the pearl itself: milky jade with a moving sheen */
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 26%, #fff 0, rgba(255, 255, 255, 0.85) 8%, transparent 26%),
+    radial-gradient(circle at 66% 78%, rgba(255, 210, 240, 0.4), transparent 40%),
+    radial-gradient(circle at 50% 50%, #f2fff9, #c7f6e6 40%, #74d6b7 74%, #2a9c80);
+  box-shadow: inset 0 -6px 14px rgba(10, 90, 70, 0.45), 0 0 18px rgba(127, 240, 200, 0.55), 0 0 40px rgba(70, 216, 171, 0.3);
+  animation: pearl-breathe 3.2s ease-in-out infinite;
+}
+
+.action:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.action:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 4px;
+}
+
+.action__label {
+  display: block;
+}
+
+.action small {
+  display: block;
+  max-width: 100%;
+  margin-top: 4px;
+  font: 800 max(12px, calc(var(--pearl) * 0.13))/1.1 "Avenir Next", "Segoe UI", Roboto, Arial, sans-serif;
+  letter-spacing: 0;
+  text-transform: none;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.action small:empty {
+  display: none;
+}
+
+.action--cashout { /* the pearl blazes gold with the live win */
+  color: #3d1800;
+  font-size: max(11px, calc(var(--pearl) * 0.122));
+  text-shadow: 0 1px 0 rgba(255, 250, 220, 0.7);
+}
+
+.action--cashout small {
+  font-size: max(12px, calc(var(--pearl) * 0.145));
+}
+
+.action--cashout::before {
+  inset: -16%;
+  background: repeating-conic-gradient(from var(--spin), rgba(255, 170, 60, 0) 0deg 6deg, rgba(255, 196, 80, 0.95) 12deg, rgba(255, 110, 40, 0.6) 16deg, rgba(255, 170, 60, 0) 22deg);
+  animation: pearl-spin 3s linear infinite;
+}
+
+.action--cashout::after {
+  background:
+    radial-gradient(circle at 34% 26%, #fff 0, rgba(255, 255, 240, 0.9) 9%, transparent 28%),
+    radial-gradient(circle at 50% 50%, #fffbe2, #ffe08a 36%, #f5ad2e 70%, #c26a0d);
+  box-shadow: inset 0 -6px 14px rgba(150, 60, 0, 0.45), 0 0 22px rgba(255, 196, 80, 0.85), 0 0 48px rgba(255, 140, 40, 0.5);
+  animation: pearl-blaze 0.9s ease-in-out infinite;
+}
+
+.action--waiting,
+.action:disabled { /* the pearl clouded in mist */
+  color: #29483f;
+  font-size: max(11px, calc(var(--pearl) * 0.11));
+  letter-spacing: 0.04em;
+  cursor: default;
+}
+
+.action--waiting::before,
+.action:disabled::before {
+  opacity: 0.25;
+  animation-duration: 30s;
+}
+
+.action--waiting::after,
+.action:disabled::after {
+  background:
+    radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.7) 0, transparent 26%),
+    radial-gradient(circle at 50% 50%, #d6e4df, #a7bfb8 55%, #6d8a83);
+  box-shadow: inset 0 -6px 14px rgba(20, 50, 45, 0.45), 0 0 10px rgba(160, 200, 190, 0.25);
+  animation: none;
+}
+
+.action--cancel { /* bet queued for the next flight: a vermilion pearl */
+  color: #fff3e6;
+  font-size: max(11px, calc(var(--pearl) * 0.122));
+  text-shadow: 0 1px 2px rgba(70, 10, 0, 0.7);
+}
+
+.action--cancel::before {
+  background: repeating-conic-gradient(from var(--spin), rgba(255, 120, 80, 0) 0deg 9deg, rgba(255, 120, 80, 0.5) 15deg, rgba(255, 120, 80, 0) 24deg);
+}
+
+.action--cancel::after {
+  background:
+    radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.75) 0, transparent 24%),
+    radial-gradient(circle at 50% 50%, #ff9a6e, #e0532f 50%, #8a2010);
+  box-shadow: inset 0 -6px 14px rgba(80, 10, 0, 0.5), 0 0 16px rgba(224, 83, 47, 0.6);
+  animation: none;
+}
+
+.action--cancel small,
+.action--waiting small {
+  font-size: max(9.5px, calc(var(--pearl) * 0.085));
+  line-height: 1.15;
+}
+
+.pearl__claw { /* the dragon's claw holding the pearl from below (taps pass through) */
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.5));
+}
+
+/* the halo turns by turning its gradient (a rotated box would poke out sideways on phones) */
+@property --spin {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes pearl-spin {
+  to {
+    --spin: 360deg;
+  }
+}
+
+@keyframes pearl-breathe {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.08); }
+}
+
+@keyframes pearl-blaze {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.035); filter: brightness(1.12); }
+}
+
+/* ── bets list: a lacquer register in a jade frame; each bet a slip, cash-outs stamped ── */
+.bets {
+  position: relative;
+  border-radius: 20px;
+  padding: 10px;
+  background:
+    radial-gradient(70% 40% at 50% 0, rgba(70, 216, 171, 0.1), transparent 70%),
+    linear-gradient(180deg, #0d1a1b, #060d0e);
+  box-shadow:
+    inset 0 0 0 1px rgba(227, 176, 78, 0.55),
+    inset 0 0 0 4px #0e5a4b,
+    inset 0 0 0 5px rgba(127, 240, 200, 0.35),
+    0 10px 24px rgba(0, 0, 0, 0.35);
+}
+
+.bets__head {
+  position: relative;
+  border-radius: 12px;
+  padding: 10px 12px 14px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 50%),
+    linear-gradient(180deg, #8f2410, #5e1a0e);
+  box-shadow: inset 0 0 0 1px rgba(227, 176, 78, 0.8), inset 0 0 0 3px #5e1a0e, inset 0 0 0 3.6px rgba(255, 226, 147, 0.4);
+}
+
+.bets__head::after { /* the same gold cloud-scroll band as the bet shrines */
+  content: "";
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 4px;
+  height: 7px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 8'%3E%3Cpath d='M0 6.6h4.2c2.6 0 3.6-1.3 3.6-2.8 0-1.6 2.3-2.4 3.3-1 .8 1.1-.2 2.5-1.5 2.1M10.5 6.6H20' fill='none' stroke='%23e3b04e' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E") repeat-x 0 0 / 18px 7px;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.bets__tabs {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 10px;
+  background: rgba(30, 4, 0, 0.45);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.45);
+}
+
+.bets__tab {
+  flex: 1;
+  height: 40px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: #f3c9b4;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.bets__tab--on { /* a polished jade tablet */
+  background:
+    radial-gradient(120% 80% at 30% 0, rgba(230, 255, 245, 0.5), transparent 60%),
+    linear-gradient(180deg, #46d8ab, #1c8a72);
+  color: #03302a;
+  box-shadow: inset 0 -2px 0 rgba(0, 50, 40, 0.45), 0 0 0 1px rgba(255, 226, 147, 0.6);
+}
+
+.bets__count {
+  margin-top: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: #f3c9b4;
+}
+
+.bets__count strong {
+  color: var(--gold-2);
+}
+
+.bets__cols,
+.row {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 0.8fr 1fr;
+  gap: 6px;
+  align-items: center;
+}
+
+.bets__cols {
+  margin: 10px 0 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  border-bottom: 1px solid rgba(227, 176, 78, 0.3);
+}
+
+.bets__cols span:not(:first-child),
+.row span:not(:first-child) {
+  text-align: center;
+}
+
+.bets__list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.row { /* a slip of dark jade with a gold edge on the left */
+  padding: 6px 10px;
+  border-radius: 4px 12px 12px 4px;
+  background: linear-gradient(90deg, rgba(70, 216, 171, 0.09), rgba(70, 216, 171, 0.02));
+  box-shadow: inset 3px 0 0 rgba(227, 176, 78, 0.45);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.row--cashed {
+  background: linear-gradient(90deg, rgba(70, 216, 171, 0.32), rgba(70, 216, 171, 0.08));
+  box-shadow: inset 3px 0 0 var(--jade), inset 0 0 0 1px rgba(70, 216, 171, 0.35);
+}
+
+.row--mine {
+  box-shadow: inset 3px 0 0 var(--gold-2), inset 0 0 0 1.5px var(--gold-2);
+}
+
+.row__user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.row__user span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.avatar {
+  display: block;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1.5px rgba(227, 176, 78, 0.7);
+}
+
+.row__x {
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.row--cashed .row__x { /* the cash-out multiplier as a little vermilion seal */
+  justify-self: center;
+  padding: 2px 5px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #e8603a, var(--seal-2));
+  box-shadow: inset 0 0 0 1px rgba(255, 226, 147, 0.7);
+  color: #fff1d8;
+  font-size: 12.5px;
+}
+
+.row__win {
+  font-weight: 800;
+}
+
+.row--cashed .row__win {
+  color: var(--gold-2);
+}
+
+.empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 18px 0 10px;
+}
+
+.fair {
+  margin: 12px 4px 0;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  text-decoration: underline dotted;
+  cursor: pointer;
+}
+
+.fair__detail {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 4px 6px 0;
+}
+
+.fair__detail p {
+  margin: 10px 0 4px;
+}
+
+.fair__detail code {
+  display: block;
+  word-break: break-all;
+  font: 11px ui-monospace, Menlo, monospace;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: #fff;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.fair__detail a {
+  color: var(--gold-2);
+}
+
+/* ── wide screens: bets list on the left, game + two bet shrines side by side ── */
+@media (min-width: 900px) {
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .game {
+    max-width: none;
+    height: 100vh;
+    padding: 0;
+    display: grid;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    grid-template-columns: minmax(280px, 24%) minmax(0, 1fr); /* right column may shrink: no sideways overflow */
+    grid-template-rows: minmax(0, 1fr) auto auto; /* play area · results · bet panels */
+    gap: 0 14px;
+  }
+
+  .sticky,
+  .panels,
+  .bets {
+    min-width: 0;
+  }
+
+  .sticky::after {
+    display: none;
+  }
+
+  .sticky {
+    display: contents;
+  }
+
+  .stage { /* behind everything: the bets list, results row and panels float over it */
+    grid-column: 1 / 3;
+    grid-row: 1 / 4;
+    height: 100vh;
+  }
+
+  .top {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .stage::after { /* below the play area the scene melts away behind the results and panels */
+    background: linear-gradient(180deg, var(--bg-0) 0, rgba(11, 32, 38, 0.75) 60px, var(--bg) 100px);
+  }
+
+  .stage__edges { /* behind the bets list (left of the play area, --left set by app.js) the scene melts away */
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    width: calc(var(--left, 0px) + 40px);
+    right: auto;
+    background: linear-gradient(90deg, var(--bg) 0, var(--bg) calc(100% - 140px), rgba(11, 32, 38, 0.7) calc(100% - 60px), var(--bg-0) 100%);
+  }
+
+  .history {
+    grid-column: 2;
+    grid-row: 2;
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    z-index: 3;
+    margin: 0 12px 12px 24px;
+  }
+
+  .bets {
+    grid-column: 1;
+    grid-row: 1 / 4;
+    position: relative;
+    z-index: 3;
+    min-height: 0;
+    margin: 12px 0 12px 12px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+  }
+
+  .panels {
+    grid-column: 2;
+    grid-row: 3;
+    position: relative;
+    z-index: 3;
+    margin: 0 12px 12px 24px;
+    padding-top: 16px;
+    align-self: start;
+    flex-direction: row;
+    gap: 12px;
+  }
+
+  .panel,
+  .panel[data-slot="1"] {
+    display: block;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .panel__tag {
+    display: block;
+  }
+
+  .panel {
+    --pearl: clamp(84px, calc((100vw - 900px) * 0.12 + 84px), 136px);
+  }
+
+  .panel__inner {
+    grid-template-columns: minmax(0, 300px) var(--pearl);
+    justify-content: center;
+    column-gap: clamp(8px, 1.4vw, 22px);
+    padding: 17px 10px 13px;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1180px) { /* narrow desktop: a slimmer frame */
+  .panel {
+    padding: 4px;
+  }
+
+  .panel__inner {
+    column-gap: 6px;
+    padding: 17px 6px 12px;
+  }
+
+  .stepper,
+  .quick {
+    gap: 2px;
+  }
+
+  .plaque input {
+    padding: 0 10px;
+    font-size: 17px;
+  }
+
+  .auto {
+    gap: 4px;
+  }
+
+  .auto__label {
+    font-size: 9.5px;
+    letter-spacing: 0.02em;
+  }
+}
+
+/* ── toast ── */
+.toast {
+  position: fixed;
+  left: 50%;
+  top: calc(60px + env(safe-area-inset-top, 0px));
+  transform: translateX(-50%);
+  z-index: 20;
+  max-width: calc(100% - 32px);
+  padding: 10px 18px;
+  border-radius: 14px;
+  background: var(--ink);
+  border: 1.5px solid var(--gold);
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.toast--win {
+  background: linear-gradient(180deg, #2fc79a, #0f7b62);
+  border-color: #c9fbe9;
+}
+
+.toast--error {
+  background: linear-gradient(180deg, var(--seal), var(--seal-2));
+  border-color: #ffc2b0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .action::before,
+  .action::after,
+  .switch input:checked + .lantern,
+  .switch input:checked + .lantern .lantern__body {
+    animation: none;
+  }
+
+  .stepper__btn,
+  .coin {
+    transition: none;
+  }
+}

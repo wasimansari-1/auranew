@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en" style="color-scheme: dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0620">
+  <title>Lucky 20 — NEXO RNG</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Outfit:wght@500;600;700;800;900&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game" id="game">
+    <!-- Phone: the board stays at the top while the bet console and the lists scroll under it. -->
+    <div class="sticky" id="sticky">
+      <section class="stage" id="stage" aria-label="Lucky 20 draw board">
+        <canvas id="scene" aria-label="Draw board: tap a number to bet on the first ball"></canvas>
+        <div class="stage__fade" aria-hidden="true"></div>
+
+        <header class="top" id="top">
+          <button type="button" class="round-btn" id="back" aria-label="Back">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <svg class="logo" viewBox="0 0 176 48" role="img" aria-label="Lucky 20">
+            <defs>
+              <linearGradient id="lgGold" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff3cf"/><stop offset=".5" stop-color="#ffcf6b"/><stop offset=".56" stop-color="#d9962e"/><stop offset="1" stop-color="#ffbb60"/></linearGradient>
+              <linearGradient id="lgPur" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#c084fc"/><stop offset="1" stop-color="#6d28d9"/></linearGradient>
+            </defs>
+            <text x="1" y="34" font-family="Outfit, system-ui, sans-serif" font-weight="900" font-size="30" letter-spacing="1.1" fill="url(#lgGold)">LUCKY</text>
+            <rect x="111" y="5" width="56" height="38" rx="9" fill="url(#lgPur)"/>
+            <rect x="112.2" y="6.2" width="53.6" height="35.6" rx="8" fill="none" stroke="#e9d5ff" stroke-opacity=".55" stroke-width="1.2"/>
+            <text x="139" y="34" text-anchor="middle" font-family="Outfit, system-ui, sans-serif" font-weight="900" font-size="27" fill="#fff">20</text>
+            <circle cx="171" cy="8" r="2.6" fill="#ffcf6b"/>
+          </svg>
+          <div class="wallet">
+            <span class="wallet__label" id="mode">Balance</span>
+            <strong id="balance">—</strong>
+            <button type="button" class="wallet__sound" id="music" aria-label="Music" aria-pressed="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.5V6.2l10-2.2v11.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.6" fill="currentColor"/><circle cx="16.5" cy="15.3" r="2.6" fill="currentColor"/></svg>
+            </button>
+            <button type="button" class="wallet__sound" id="sound" aria-label="Sound" aria-pressed="true">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z" fill="currentColor"/></svg>
+            </button>
+          </div>
+        </header>
+
+        <!-- placed on the play area by app.js -->
+        <div class="play" id="play">
+          <div class="status" id="status" role="status"></div>
+          <div class="timer" id="timer" hidden>
+            <svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="43" class="timer__bg"/><circle cx="50" cy="50" r="43" class="timer__ring" id="timerRing" pathLength="100"/></svg>
+            <strong id="timerNum">15</strong>
+          </div>
+          <div class="ballnow" id="ballnow" hidden>
+            <div class="ballnow__orb" id="ballOrb"><b id="ballNum">—</b></div>
+            <div class="ballnow__count"><b id="ballIdx">0</b><span>/20</span></div>
+            <div class="rail" id="rail" aria-label="Numbers in draw order"></div>
+          </div>
+          <div class="banner" id="banner" hidden><div class="banner__l"><small>You win</small><b id="bannerWin"></b></div><span id="bannerSub"></span></div>
+        </div>
+
+        <!-- live meters: the outcome of the whole draw, ball by ball -->
+        <div class="meters" id="meters">
+          <div class="meter meter--sum">
+            <div class="meter__head"><span>SUM</span><b id="mSum">0</b><em id="mPace">line 810</em></div>
+            <div class="sumbar"><i class="sumbar__fill" id="mSumFill"></i><i class="sumbar__line"></i></div>
+          </div>
+          <div class="meter meter--split">
+            <div class="split"><span class="split__a">ODD <b id="mOdd">0</b></span><div class="split__bar"><i id="mOddFill"></i></div><span class="split__b"><b id="mEven">0</b> EVEN</span></div>
+            <div class="split"><span class="split__a">TOP <b id="mTop">0</b></span><div class="split__bar split__bar--tb"><i id="mTopFill"></i></div><span class="split__b"><b id="mBot">0</b> BTM</span></div>
+          </div>
+          <div class="meter meter--col" id="mCols">
+            <span class="cc cc--purple"><i></i><b>0</b></span>
+            <span class="cc cc--gold"><i></i><b>0</b></span>
+            <span class="cc cc--teal"><i></i><b>0</b></span>
+            <span class="cc cc--rose"><i></i><b>0</b></span>
+          </div>
+        </div>
+        <div class="chipmarks" id="chipmarks" aria-hidden="true"></div>
+        <div class="conn" id="conn" hidden>Reconnecting…</div>
+      </section>
+      <div class="history" id="historyBox" aria-label="Last draws"><div class="history__track" id="history"></div></div>
+    </div>
+
+    <!-- bet console: the control desk under the LED board -->
+    <section class="console" id="console" aria-label="Your bets">
+      <div class="console__grid" id="keys">
+        <div class="grp grp--ou">
+          <button type="button" class="key" data-spot="under"><span class="key__t">UNDER</span><span class="key__s">sum 210–809</span><span class="pay">×1.94</span></button>
+          <div class="ougauge" aria-hidden="true"><span class="ougauge__lbl">SUM LINE</span><b>810</b><span class="ougauge__note">810: both lose</span></div>
+          <button type="button" class="key key--gold" data-spot="over"><span class="key__t">OVER</span><span class="key__s">sum 811–1610</span><span class="pay">×1.94</span></button>
+        </div>
+        <div class="grp grp--maj">
+          <button type="button" class="key" data-spot="odd"><span class="key__t">ODD</span><span class="key__s">11+ odd</span><span class="pay">×2.42</span></button>
+          <button type="button" class="key key--draw" data-spot="oddeven:draw"><span class="key__t">10–10</span><span class="key__s">odd = even</span><span class="pay">×4.75</span></button>
+          <button type="button" class="key" data-spot="even"><span class="key__t">EVEN</span><span class="key__s">11+ even</span><span class="pay">×2.42</span></button>
+        </div>
+        <div class="grp grp--maj">
+          <button type="button" class="key" data-spot="top"><span class="key__t">TOP</span><span class="key__s">11+ in 1–40</span><span class="pay">×2.42</span></button>
+          <button type="button" class="key key--draw" data-spot="topbottom:draw"><span class="key__t">10–10</span><span class="key__s">half &amp; half</span><span class="pay">×4.75</span></button>
+          <button type="button" class="key" data-spot="bottom"><span class="key__t">BOTTOM</span><span class="key__s">11+ in 41–80</span><span class="pay">×2.42</span></button>
+        </div>
+        <div class="grp grp--col">
+          <span class="grp__lbl">MOST BALLS <em>×4.95</em><small>a tie loses</small></span>
+          <button type="button" class="key key--c key--purple" data-spot="colour:purple" aria-label="Purple 1 to 20 has the most balls"><i></i><span class="key__t">1–20</span></button>
+          <button type="button" class="key key--c key--gold2" data-spot="colour:gold" aria-label="Gold 21 to 40 has the most balls"><i></i><span class="key__t">21–40</span></button>
+          <button type="button" class="key key--c key--teal" data-spot="colour:teal" aria-label="Teal 41 to 60 has the most balls"><i></i><span class="key__t">41–60</span></button>
+          <button type="button" class="key key--c key--rose" data-spot="colour:rose" aria-label="Rose 61 to 80 has the most balls"><i></i><span class="key__t">61–80</span></button>
+        </div>
+        <div class="grp grp--first">
+          <span class="grp__lbl">FIRST BALL <em>range ×7.7 · number ×77 — tap the board</em></span>
+          <div class="decades" id="decades"></div>
+        </div>
+      </div>
+      <div class="console__ctl">
+        <div class="tools">
+          <button type="button" class="tool" id="undo" aria-label="Undo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 4 10l5 5M4.5 10H14a5.5 5.5 0 0 1 0 11h-3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+          <button type="button" class="tool" id="clear" aria-label="Clear"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button>
+          <button type="button" class="tool" id="rebet" aria-label="Rebet last bets"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12a7 7 0 1 1-2.1-5M19 4v4h-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+        <div class="quick" id="quick" role="radiogroup" aria-label="Chip value"></div>
+        <div class="stake">
+          <button type="button" class="stake__btn" id="less" aria-label="Smaller chip">−</button>
+          <div class="stake__val"><small>Chip</small><b id="chipVal">€0.10</b></div>
+          <button type="button" class="stake__btn" id="more" aria-label="Bigger chip">+</button>
+        </div>
+        <button type="button" class="place action" id="action"><b id="placeT">PLACE BETS</b><small id="placeS"></small></button>
+      </div>
+    </section>
+
+    <aside class="side" id="side">
+      <div class="side__tabs" role="tablist">
+        <button type="button" role="tab" class="side__tab on" data-tab="all" aria-selected="true">All bets</button>
+        <button type="button" role="tab" class="side__tab" data-tab="mine" aria-selected="false">My bets</button>
+      </div>
+      <div class="side__count"><span id="countLabel">Bets this round</span> <b id="betCount">0</b></div>
+      <div class="side__list" id="list"></div>
+      <div class="side__links">
+        <button type="button" class="link" id="rulesBtn">Rules &amp; pays</button>
+        <button type="button" class="link" id="fair">Provably fair · round <span id="fRound">—</span></button>
+      </div>
+      <div class="fair" id="fairDetail" hidden>
+        <p>Draw hash (published when betting opens)</p>
+        <code id="fHash">—</code>
+        <p>Server seed (revealed after the draw)</p>
+        <code id="fSeed">—</code>
+        <p>Check: SHA-256(seed) = hash. The 20 numbers come from HMAC-SHA256(seed, "game:round:counter"), read as unbiased picks from the numbers still in the drum (1–80, no repeats).</p>
+        <button type="button" class="link" id="fCheckBtn">Recompute the last draw from its seed</button>
+        <p id="fCheck" hidden></p>
+      </div>
+    </aside>
+
+    <div class="modal" id="rules" role="dialog" aria-modal="true" aria-labelledby="rulesTitle" hidden>
+      <div class="modal__card">
+        <button type="button" class="modal__close" id="rulesClose" aria-label="Close">×</button>
+        <h2 id="rulesTitle">Lucky 20 — rules &amp; pays</h2>
+        <p>Every 30 seconds, 20 different numbers from 1 to 80 light up on the board, one after another. Everyone plays the same draw. Bets are open for 15 seconds; then the 20 numbers are drawn and every bet is settled on the whole draw.</p>
+        <p>Pick a chip, tap the bets you like (several per round), then press <b>Place bets</b>. Chips still on the console are placed for you just before betting closes. Each bet takes from <b id="rMin">€0.10</b> to <b id="rMax">€100</b>. To bet on the exact first number, tap it on the board.</p>
+        <div class="paytable" id="paytable"></div>
+        <p class="muted">Pays show what comes back for each €1 staked, your stake included. A sum of exactly 810 loses both Over and Under. Most balls: when two or more colours share the most numbers, every colour bet loses. RTP is the long-run return of each bet.</p>
+        <p class="muted">Malfunction voids all pays and plays.</p>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" hidden></div>
+    <div class="fx" id="fx" aria-hidden="true"></div>
+  </main>
+  <script src="../_core/sound-unlock.js"></script>
+  <script src="../_core/socket-auth.js"></script>
+  <script src="../_core/secure-socket.js"></script>
+  <script src="/nexorng-config.js"></script>
+  <script src="../_core/table-client.js"></script>
+  <script src="rules.js"></script>
+  <script src="../_core/players.js"></script>
+  <script src="../_core/phrases.js"></script>
+  <script src="audio.js"></script>
+  <script type="module" src="app.js"></script>
+  <script src="../_core/fit-screen.js"></script>
+  <script src="../_core/fair.js"></script>
+</body>
+</html>

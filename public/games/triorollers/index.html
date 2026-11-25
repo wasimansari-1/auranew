@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en" style="color-scheme: dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#130a29">
+  <title>Trio Rollers — NEXO RNG</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game" id="game">
+    <!-- Phone: the machine stays at the top while the console and the lists scroll under it. -->
+    <div class="sticky" id="sticky">
+      <header class="top" id="top">
+        <button type="button" class="round-btn" id="back" aria-label="Back">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="brand" role="img" aria-label="Trio Rollers">
+          <svg class="brand__mark" viewBox="0 0 40 40" aria-hidden="true">
+            <defs>
+              <linearGradient id="trGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe9c0"/><stop offset="1" stop-color="#e48a2c"/></linearGradient>
+              <linearGradient id="trBox" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3b1c74"/><stop offset="1" stop-color="#1a0d36"/></linearGradient>
+              <linearGradient id="trDrum" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#140a28"/><stop offset=".5" stop-color="#2d1650"/><stop offset="1" stop-color="#140a28"/></linearGradient>
+            </defs>
+            <rect x="2" y="3" width="36" height="34" rx="8" fill="url(#trBox)" stroke="url(#trGold)" stroke-width="2.2"/>
+            <rect x="7" y="9" width="7.4" height="22" rx="2.4" fill="url(#trDrum)"/>
+            <rect x="16.3" y="9" width="7.4" height="22" rx="2.4" fill="url(#trDrum)"/>
+            <rect x="25.6" y="9" width="7.4" height="22" rx="2.4" fill="url(#trDrum)"/>
+            <path d="M5 20h30" stroke="#ffcf6b" stroke-width="2"/>
+          </svg>
+          <span class="brand__text"><b>TRIO ROLLERS</b><small>LIVE DRAW · 30 s</small></span>
+        </div>
+        <div class="wallet">
+          <span class="wallet__label" id="mode">Balance</span>
+          <strong id="balance">—</strong>
+          <button type="button" class="wallet__sound" id="music" aria-label="Music" aria-pressed="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.5V6.2l10-2.2v11.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.6" fill="currentColor"/><circle cx="16.5" cy="15.3" r="2.6" fill="currentColor"/></svg>
+          </button>
+          <button type="button" class="wallet__sound" id="sound" aria-label="Sound" aria-pressed="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <section class="stage" id="stage" aria-label="Trio Rollers">
+        <canvas id="scene" aria-hidden="true"></canvas>
+        <div class="stage__edges" aria-hidden="true"></div>
+        <!-- placed on the play area by app.js -->
+        <div class="play" id="play">
+          <div class="status" id="status" role="status"></div>
+          <div class="timer" id="timer" hidden>
+            <svg viewBox="0 0 100 100" aria-hidden="true">
+              <circle cx="50" cy="50" r="43" class="timer__bg"/>
+              <circle cx="50" cy="50" r="43" class="timer__ring" id="timerRing" pathLength="100"/>
+            </svg>
+            <strong id="timerNum">15</strong><small>BETS</small>
+          </div>
+          <div class="drawpill" id="drawpill" hidden><i></i><span id="drawText">DRAWING</span></div>
+          <div class="banner" id="banner" hidden><small id="bannerTitle">You win</small><b id="bannerWin"></b><span class="banner__lines" id="bannerLines"></span></div>
+        </div>
+        <div class="conn" id="conn" hidden>Reconnecting…</div>
+      </section>
+
+      <div class="history" id="historyBox" aria-label="Last results"><span class="history__label">LAST</span><div class="history__track" id="history"></div></div>
+    </div>
+
+    <div class="tablewrap" id="tablewrap">
+      <section class="console" id="board" aria-label="Your bets">
+        <div class="tabs" role="tablist" id="tabs">
+          <button type="button" role="tab" class="tab tab--on" data-tab="number" aria-selected="true">NUMBER <small>960×</small><span class="tab__win" hidden></span></button>
+          <button type="button" role="tab" class="tab" data-tab="digits" aria-selected="false">DIGITS <small>9.6×</small><span class="tab__win" hidden></span></button>
+          <button type="button" role="tab" class="tab" data-tab="sum" aria-selected="false">SUM <small>1.92–960×</small><span class="tab__win" hidden></span></button>
+        </div>
+        <div class="sections">
+          <div class="sec sec--number sec--on" data-sec="number">
+            <div class="sec__head"><span>YOUR NUMBER</span><b id="pickShow">4 · 7 · 2</b></div>
+            <div class="picker">
+              <div class="minis" id="minis"></div>
+              <div class="picker__side">
+                <button type="button" class="ibtn" id="lucky"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="9" cy="9" r="1.4" fill="currentColor"/><circle cx="15" cy="15" r="1.4" fill="currentColor"/><circle cx="15" cy="9" r="1.4" fill="currentColor"/><circle cx="9" cy="15" r="1.4" fill="currentColor"/></svg>Lucky</button>
+                <button type="button" class="ibtn" id="lastNum"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7v5l3 2M20 12a8 8 0 1 1-2.3-5.7M20 4v4h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Last draw</button>
+              </div>
+            </div>
+            <div class="keys" id="keys"></div>
+          </div>
+          <div class="sec sec--digits" data-sec="digits">
+            <div class="sec__head"><span>SINGLE DIGIT · ONE ROLLER</span><b>9.6×</b></div>
+            <div class="dgrid" id="dgrid"></div>
+          </div>
+          <div class="sec sec--sum" data-sec="sum">
+            <div class="sec__head"><span>SUM OF THE 3 DIGITS</span><b>1.92× – 960×</b></div>
+            <div class="sgrid" id="sgrid"></div>
+            <div class="spec" id="spec"></div>
+          </div>
+        </div>
+        <div class="console__foot">
+        <div class="slip" id="slip" aria-label="Your bet slip"></div>
+        <div class="dock" id="dock">
+          <div class="dock__chips" id="chips" role="radiogroup" aria-label="Chip value"></div>
+          <div class="tools">
+            <button type="button" class="tool" id="undo" aria-label="Undo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 4 10l5 5M4.5 10H14a5.5 5.5 0 0 1 0 11h-3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Undo</span></button>
+            <button type="button" class="tool" id="clear" aria-label="Clear"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><span>Clear</span></button>
+            <button type="button" class="tool" id="rebet" aria-label="Repeat last bet"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12a7 7 0 1 1-2.1-5M19 4v4h-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Repeat</span></button>
+            <button type="button" class="tool tool--wide" id="double" aria-label="Double"><b>2×</b><span>Double</span></button>
+          </div>
+          <button type="button" class="place" id="action"><span id="placeLabel">Tap a bet</span><small id="placeSub"></small></button>
+        </div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="side" id="side">
+      <section class="stats" aria-label="Digit heat">
+        <div class="stats__head">Digit heat · last <b id="statN">0</b> draws</div>
+        <div class="heat" id="heat"></div>
+      </section>
+
+      <section class="bets">
+        <div class="bets__tabs" role="tablist">
+          <button type="button" role="tab" class="bets__tab bets__tab--on" data-tab="all" aria-selected="true">All bets</button>
+          <button type="button" role="tab" class="bets__tab" data-tab="mine" aria-selected="false">My bets</button>
+        </div>
+        <div class="bets__count"><span id="countLabel">Bets this round</span> <strong id="betCount">0</strong></div>
+        <div class="bets__cols" id="cols"></div>
+        <div class="bets__list" id="list"></div>
+      </section>
+
+      <div class="links">
+        <button type="button" class="link" id="rulesBtn">Rules &amp; pays · RTP 96%</button>
+        <button type="button" class="link" id="fair">Provably fair · round <span id="fRound">—</span></button>
+      </div>
+      <div class="fair__detail" id="fairDetail" hidden>
+        <p>Draw hash (published when betting opens)</p>
+        <code id="fHash">—</code>
+        <p>Server seed (revealed after the round)</p>
+        <code id="fSeed">—</code>
+        <p>Check: SHA-256(seed) = hash. The three digits are HMAC-SHA256(seed, "<span id="fGame">88.0096</span>:round:0") read as three unbiased numbers from 0 to 9, left to right.</p>
+        <button type="button" class="link" id="fCheckBtn">Recompute the last round’s number from its seed</button>
+        <p id="fCheck" hidden></p>
+      </div>
+    </aside>
+
+    <div class="modal" id="rules" role="dialog" aria-modal="true" aria-labelledby="rulesTitle" hidden>
+      <div class="modal__card">
+        <button type="button" class="modal__close" id="rulesClose" aria-label="Close">×</button>
+        <h2 id="rulesTitle">Trio Rollers — rules &amp; pays</h2>
+        <p>Every 30 seconds the three rollers draw one number from <b>000</b> to <b>999</b> — the same draw for every player. Each roller stops on a digit 0–9; every number is equally likely.</p>
+        <p><b>Bets</b> are open for 15 seconds: pick a chip, then tap bets (several chips on a bet add up; up to 20 different bets per round). Press <b>Place bets</b>, or your chips are placed for you just before betting closes. Then the rollers spin and lock one by one, left to right (10 s); the result shows for 5 s.</p>
+        <table class="paytable">
+          <thead><tr><th>Bet</th><th>Wins when</th><th>Pays</th></tr></thead>
+          <tbody>
+            <tr><td>Straight</td><td>the exact number, in order</td><td>960×</td></tr>
+            <tr><td>Box (6-way)</td><td>three different digits, any order</td><td>160×</td></tr>
+            <tr><td>Box (3-way)</td><td>a number with a pair, any order</td><td>320×</td></tr>
+            <tr><td>Front pair</td><td>1st + 2nd digit exact</td><td>96×</td></tr>
+            <tr><td>Back pair</td><td>2nd + 3rd digit exact</td><td>96×</td></tr>
+            <tr><td>Single digit</td><td>one chosen roller shows the digit</td><td>9.6×</td></tr>
+            <tr><td>Any triple</td><td>000, 111 … 999</td><td>96×</td></tr>
+            <tr><td>Small / Big</td><td>sum 0–13 / 14–27</td><td>1.92×</td></tr>
+            <tr><td>Odd / Even</td><td>the sum is odd / even</td><td>1.92×</td></tr>
+            <tr><td>Sum</td><td>the digits add up exactly to it</td><td id="sumPays">12.80× – 960×</td></tr>
+          </tbody>
+        </table>
+        <p>Pays are the total returned for 1 (a 9.6× win on €1 returns €9.60). Return to player (RTP): <b>96%</b> on every bet (exact sums 95.95%–96%).</p>
+        <p>Bet limits for one round (all your bets together): <b id="rMin">€0.10</b> to <b id="rMax">€100</b>. Maximum win per round: <b id="rMaxWin">€50,000</b>.</p>
+        <p class="muted">Malfunction voids all pays and plays.</p>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" hidden></div>
+    <div class="fx" id="fx" aria-hidden="true"></div>
+  </main>
+  <script src="../_core/sound-unlock.js"></script>
+  <script src="../_core/socket-auth.js"></script>
+  <script src="../_core/secure-socket.js"></script>
+  <script src="/nexorng-config.js"></script>
+  <script src="../_core/table-client.js"></script>
+  <script src="rules.js"></script>
+  <script src="../_core/players.js"></script>
+  <script src="audio.js"></script>
+  <script type="module" src="app.js"></script>
+  <script src="../_core/fit-screen.js"></script>
+  <script src="../_core/fair.js"></script>
+</body>
+</html>

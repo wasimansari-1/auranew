@@ -1,0 +1,1034 @@
+:root {
+  --bg: #2a1a0e;
+  --panel: #4a2e17;
+  --panel-2: #2f1c0c;
+  --accent: #f7b733;
+  --accent-2: #ffd970;
+  --text: #fff6e8;
+  --muted: #e8cfa9;
+  --green: #2fbf5f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.3 "Trebuchet MS", system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+.game {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 10px calc(16px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── sticky game screen (phone) ── */
+.sticky {
+  --top-h: calc(58px + env(safe-area-inset-top, 0px)); /* the bar floating over the scene */
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin: 0 -10px;
+  padding: 0 0 8px;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sticky::after { /* soft edge where the fixed screen meets the page below */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -18px;
+  height: 18px;
+  background: linear-gradient(180deg, var(--bg), rgba(42, 26, 14, 0));
+  pointer-events: none;
+}
+
+/* the top bar floats over the scene */
+.top {
+  position: absolute;
+  z-index: 4;
+  top: calc(8px + env(safe-area-inset-top, 0px));
+  left: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.round-btn {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid #f7b733;
+  background: #3a2410;
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+}
+
+.round-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* our own wordmark */
+.logo { /* the game's logo art: a fixed-height image slot (swap assets/logo*.webp) */
+  display: block;
+  height: 40px;
+  width: auto;
+  max-width: calc(100% - 210px);
+  object-fit: contain;
+  object-position: left center;
+  margin-right: auto;
+  min-width: 0;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.wallet {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px 5px 14px;
+  border-radius: 999px;
+  border: 2px solid var(--accent);
+  background: linear-gradient(180deg, #5a3a1a, #33200c);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.wallet__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.wallet strong {
+  font-size: 15px;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.wallet__sound {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+}
+
+.wallet__sound svg {
+  width: 18px;
+  height: 18px;
+}
+
+.wallet__sound[aria-pressed="false"] {
+  opacity: 0.5;
+}
+
+/* ── stage ──
+   Full-bleed scene: edge to edge, up under the top bar and down behind the results row.
+   The game itself stays clear; the scene only melts into the page below the play area. */
+.stage {
+  position: relative;
+  width: 100%;
+  height: min(calc(min(100vw, 720px) * 9 / 11 + var(--top-h) + 62px), 60vh);
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.stage::after { /* only below the play area (--below, set by app.js) */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  height: var(--below, 0px);
+  background: linear-gradient(180deg, rgba(42, 26, 14, 0), var(--bg));
+  pointer-events: none;
+}
+
+.stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.stage__center { /* top-centre of the play area: placed and sized by app.js (--mf, --tf) */
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  top: var(--top-h);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+  text-align: center;
+}
+
+.mult { /* readable over the miner: a soft dark halo */
+  min-height: 1.12em;
+  font: 900 var(--mf, 48px)/1.12 "Helvetica Neue", Arial, "Liberation Sans", sans-serif;
+  letter-spacing: 1px;
+  color: #fff;
+  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.85), 0 0 3px #000, 0 0 10px rgba(0, 0, 0, 0.5);
+  font-variant-numeric: tabular-nums;
+  transition: opacity 0.3s ease, color 0.35s ease;
+}
+
+.mult--off { /* betting: the last value fades away */
+  opacity: 0;
+}
+
+.mult--lost {
+  color: #ff6a4d;
+  animation: nx-pop 0.45s ease-out;
+}
+
+.mult--won { /* gold */
+  color: #ffe08a;
+  text-shadow: 0 0 22px rgba(255, 190, 60, 0.75), 0 4px 18px rgba(0, 0, 0, 0.85), 0 0 3px #000;
+  animation: nx-pop 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.3);
+}
+
+@keyframes nx-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+.is-in { /* a new text line eases in */
+  animation: nx-in 0.3s ease-out;
+}
+
+@keyframes nx-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+.flew,
+.hint {
+  order: 1;
+  margin-top: 2px;
+  font: 800 var(--tf, 15px)/1.2 "Helvetica Neue", Arial, "Liberation Sans", sans-serif;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: #ffe9b0;
+  text-shadow: 0 2px 8px #000, 0 0 2px #000;
+}
+
+.flew {
+  color: #ffb3a3;
+}
+
+.conn {
+  position: absolute;
+  z-index: 3;
+  top: calc(var(--top-h) + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(181, 35, 12, 0.92);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ── my last results ── */
+.history {
+  position: absolute; /* floats over the bottom of the scene */
+  z-index: 3;
+  left: 10px;
+  right: 10px;
+  bottom: 14px;
+  min-height: 40px;
+  border-radius: 999px;
+  padding: 6px;
+  background: linear-gradient(180deg, rgba(74, 46, 23, 0.92), rgba(47, 28, 12, 0.92));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+}
+
+.history__track {
+  display: flex;
+  gap: 6px;
+  min-height: 26px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.history__track::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  flex-shrink: 0;
+  min-width: 52px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+  background: linear-gradient(180deg, #b8401f, #8a2b14);
+  color: #fff;
+}
+
+.chip--won {
+  background: linear-gradient(180deg, #ffe08a, #f0a91c);
+  color: #3a2208;
+}
+
+.chip--new { /* the newest result slides in */
+  animation: nx-chip 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+@keyframes nx-chip {
+  from { opacity: 0; transform: translateX(-14px) scale(0.85); }
+  to { opacity: 1; transform: none; }
+}
+
+.history__empty {
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+/* ── bets ── */
+.bets {
+  border-radius: 28px;
+  padding: 10px;
+  background: linear-gradient(180deg, var(--panel), var(--panel-2));
+}
+
+.bets__head {
+  border-radius: 22px;
+  padding: 12px 14px;
+  background: linear-gradient(180deg, #ffd98a, #f2b545);
+  color: #3a2208;
+}
+
+.bets__tabs {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.bets__tab {
+  min-width: 112px;
+  height: 36px;
+  border: 0;
+  border-radius: 999px;
+  background: #7b5230;
+  color: #ffe7c2;
+  font-weight: 800;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.bets__tab--on {
+  background: #3a2208;
+  color: #ffe7a8;
+}
+
+.bets__count {
+  margin-top: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.bets__cols,
+.row {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 0.8fr 1fr;
+  gap: 6px;
+  align-items: center;
+}
+
+.bets__cols {
+  margin: 10px 0 6px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 14px;
+}
+
+.bets__cols span:not(:first-child),
+.row span:not(:first-child) {
+  text-align: center;
+}
+
+.bets__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.row {
+  padding: 9px 12px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #6a4423, #55351a);
+  font-size: 14px;
+}
+
+.row span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row--won {
+  background: linear-gradient(180deg, #2f9e55, #217a40);
+}
+
+.row--mine {
+  outline: 2px solid var(--accent-2);
+}
+
+.row__x {
+  font-weight: 800;
+  color: var(--accent-2);
+}
+
+.row--won .row__x {
+  color: #fff;
+}
+
+.row__win {
+  font-weight: 800;
+}
+
+.empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 18px 0 10px;
+}
+
+.fair {
+  margin: 12px 4px 0;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  text-decoration: underline dotted;
+  cursor: pointer;
+}
+
+.fair__detail {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 4px 6px 0;
+}
+
+.fair__detail p {
+  margin: 10px 0 4px;
+}
+
+.fair__detail code {
+  display: block;
+  word-break: break-all;
+  font: 11px ui-monospace, Menlo, monospace;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: #fff;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.fair__detail a {
+  color: var(--accent-2);
+}
+
+/* ── toast ── */
+.toast {
+  position: fixed;
+  left: 50%;
+  top: calc(60px + env(safe-area-inset-top, 0px));
+  transform: translateX(-50%);
+  z-index: 20;
+  max-width: calc(100% - 32px);
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: var(--panel-2);
+  border: 2px solid var(--accent);
+  font-weight: 800;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.toast--error {
+  background: linear-gradient(180deg, #d1361a, #9a1c08);
+  border-color: #ffb3a3;
+}
+
+/* ── wide screens: bets list on the left; the scene spans the whole screen behind it, the
+      results row and the bet panel (all floating) ── */
+@media (min-width: 900px) {
+  .logo {
+    height: 46px;
+  }
+
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .game {
+    max-width: none;
+    width: 100%;
+    height: 100vh;
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(280px, 24%) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto auto; /* play area · results · bet panel */
+    gap: 0 14px;
+  }
+
+  .sticky,
+  .panels,
+  .bets {
+    min-width: 0;
+  }
+
+  .sticky::after {
+    display: none;
+  }
+
+  .sticky {
+    display: contents;
+  }
+
+  .stage {
+    grid-column: 1 / 3;
+    grid-row: 1 / 4;
+    height: 100vh;
+  }
+
+  .top {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .stage::after { /* below the play area the scene melts away behind the results and the panel */
+    background: linear-gradient(180deg, rgba(42, 26, 14, 0) 0, rgba(42, 26, 14, 0.75) 60px, var(--bg) 100px);
+  }
+
+  .stage__edges { /* behind the bets list (--left, set by app.js) the scene melts away */
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    width: calc(var(--left, 0px) + 40px);
+    pointer-events: none;
+    background: linear-gradient(90deg, var(--bg) 0, var(--bg) calc(100% - 140px), rgba(42, 26, 14, 0.7) calc(100% - 60px), rgba(42, 26, 14, 0) 100%);
+  }
+
+  .history {
+    grid-column: 2;
+    grid-row: 2;
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    margin: 0 12px 10px 24px;
+  }
+
+  .bets {
+    grid-column: 1;
+    grid-row: 1 / 4;
+    position: relative;
+    z-index: 3;
+    min-height: 0;
+    margin: 12px 0 12px 12px;
+    overflow-y: auto;
+  }
+
+  .panels {
+    grid-column: 2;
+    grid-row: 3;
+    position: relative;
+    z-index: 3;
+    margin: 0 12px 12px 24px;
+  }
+
+}
+
+@media (max-width: 380px) {
+  .logo {
+    height: 34px;
+  }
+
+  .wallet {
+    gap: 5px;
+    padding-left: 10px;
+  }
+}
+
+/* ══ Gold Digger's control console (its own design: riveted steel in a timber frame) ══ */
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.rig {
+  padding: 10px;
+  border-radius: 18px;
+  /* timber frame */
+  background:
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.12) 0 2px, transparent 2px 46px),
+    linear-gradient(180deg, #7a4b25, #5b3518);
+  box-shadow: inset 0 2px 0 rgba(255, 220, 160, 0.25), 0 10px 24px rgba(0, 0, 0, 0.45);
+}
+
+.rig__plate {
+  position: relative;
+  padding: 18px 14px 16px;
+  border-radius: 12px;
+  border: 2px solid #2a1c10;
+  /* brushed steel */
+  background:
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.04) 0 1px, transparent 1px 3px),
+    linear-gradient(180deg, #5d6470, #3b4049 60%, #30343c);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.18), inset 0 -3px 0 rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.rivet {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #e6e9ee, #7d838d 60%, #3a3e45);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.6);
+}
+
+.rivet:nth-child(1) { top: 7px; left: 7px; }
+.rivet:nth-child(2) { top: 7px; right: 7px; }
+.rivet:nth-child(3) { bottom: 7px; left: 7px; }
+.rivet:nth-child(4) { bottom: 7px; right: 7px; }
+
+/* stake: brass knobs either side of a pressure gauge with a digital read-out */
+.stake {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.knob {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffe9a6, #d4a030 55%, #7a5414);
+  box-shadow: 0 3px 0 #4a3008, 0 5px 10px rgba(0, 0, 0, 0.4), inset 0 -2px 0 rgba(0, 0, 0, 0.25);
+  color: #3a2208;
+  font-size: 24px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.knob:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #4a3008, inset 0 -2px 0 rgba(0, 0, 0, 0.25);
+}
+
+.gauge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.gauge__face {
+  position: relative;
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  border: 6px solid #b98a2e;
+  background:
+    repeating-conic-gradient(from 240deg, #2a1708 0 1.2deg, transparent 1.2deg 10deg) center / 86% 86% no-repeat,
+    radial-gradient(circle, #fff6dc 0 52%, #f0e2bf 53% 100%);
+  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.35), 0 3px 0 #6b4c14;
+  /* the danger arc */
+  background-blend-mode: normal;
+}
+
+.gauge__face::before {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 50%;
+  background: conic-gradient(from 60deg, #d23a2a 0 60deg, transparent 60deg 360deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 62%, #000 63% 70%, transparent 71%);
+  mask: radial-gradient(circle, transparent 0 62%, #000 63% 70%, transparent 71%);
+  opacity: 0.85;
+}
+
+.gauge__needle {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 4px;
+  height: 42%;
+  margin-left: -2px;
+  border-radius: 3px;
+  background: linear-gradient(180deg, #d23a2a, #8a1a10);
+  transform-origin: 50% 100%;
+  transform: translateY(-100%) rotate(calc(-120deg + var(--stake, 0) * 240deg));
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.gauge__hub {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff2c0, #8a5a14);
+}
+
+.gauge__word {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 18%;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #6b4c14;
+}
+
+.gauge__lcd {
+  display: block;
+  padding: 3px 8px;
+  border-radius: 8px;
+  border: 2px solid #1a1d22;
+  background: linear-gradient(180deg, #0e1a10, #07110a);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.gauge__lcd input {
+  width: 96px;
+  height: 40px;
+  border: 0;
+  background: transparent;
+  text-align: center;
+  font: 800 20px ui-monospace, Menlo, monospace;
+  color: #7dff8a;
+  text-shadow: 0 0 6px rgba(125, 255, 138, 0.6);
+  outline: none;
+}
+
+/* quick amounts: gold ore nuggets */
+.nuggets {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.nuggets button {
+  position: relative;
+  min-width: 64px;
+  height: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 46% 54% 42% 58% / 56% 44% 58% 42%;
+  background: radial-gradient(circle at 30% 30%, #fff1a8, #f2b92e 45%, #b8791a 80%, #7a4d0e);
+  box-shadow: 0 3px 0 #5a3808, 0 6px 10px rgba(0, 0, 0, 0.35), inset 0 -3px 4px rgba(90, 50, 0, 0.45);
+  color: #3a2208;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.nuggets button:nth-child(2) { border-radius: 58% 42% 55% 45% / 46% 58% 42% 54%; }
+.nuggets button:nth-child(3) { border-radius: 42% 58% 48% 52% / 58% 46% 54% 42%; }
+.nuggets button:nth-child(4) { border-radius: 52% 48% 60% 40% / 42% 56% 44% 58%; }
+
+.nuggets button::after { /* a glint */
+  content: "";
+  position: absolute;
+  top: 7px;
+  left: 14px;
+  width: 8px;
+  height: 4px;
+  border-radius: 50%;
+  background: rgba(255, 255, 240, 0.9);
+  transform: rotate(-25deg);
+}
+
+.nuggets button:active {
+  transform: translateY(2px);
+}
+
+/* the DRILL button in a hazard-striped bay; in a round it is the gold sack (CASH OUT) */
+.drill-bay {
+  position: relative;
+  isolation: isolate; /* the sack's glow sits above the hazard stripes, under the button */
+  padding: 6px;
+  border-radius: 22px;
+  background: repeating-linear-gradient(135deg, #f2c12e 0 12px, #1a1208 12px 24px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.action {
+  display: block;
+  width: min(72vw, 270px);
+  min-height: 76px;
+  border: 0;
+  border-radius: 16px;
+  background: radial-gradient(circle at 50% 30%, #ff6a4a, #d2311c 55%, #8f1a0c);
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.35), inset 0 -5px 0 rgba(0, 0, 0, 0.3);
+  color: #fff;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  line-height: 1.05;
+  text-shadow: 0 2px 0 rgba(90, 10, 0, 0.6);
+  cursor: pointer;
+  transition: transform 0.08s;
+}
+
+.action:active {
+  transform: translateY(3px);
+}
+
+.action small {
+  display: block;
+  min-height: 1em;
+  margin-top: 2px;
+  font-size: 17px;
+  letter-spacing: 0.5px;
+}
+
+.action--cashout { /* the gold sack */
+  border-radius: 40% 40% 48% 48% / 26% 26% 60% 60%;
+  background: radial-gradient(circle at 50% 35%, #fff0a0, #f3c03a 40%, #c8861a 75%, #8a5510);
+  color: #3a2208;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+  position: relative;
+}
+
+.action--cashout::after { /* a pulsing golden glow behind the sack (the button itself holds still) */
+  content: "";
+  position: absolute;
+  inset: -6px;
+  z-index: -1;
+  border-radius: inherit;
+  box-shadow: 0 0 22px 6px rgba(255, 207, 74, 0.6);
+  animation: sack 0.9s ease-in-out infinite;
+}
+
+.action--cashout::before { /* the tie at the top */
+  content: "";
+  display: block;
+  width: 44px;
+  height: 8px;
+  margin: -4px auto 4px;
+  border-radius: 4px;
+  background: #7a4b25;
+}
+
+@keyframes sack {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; }
+}
+
+.action--waiting {
+  background: linear-gradient(180deg, #7d838d, #4d535c);
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.2);
+  cursor: default;
+}
+
+.action--won {
+  background: radial-gradient(circle at 50% 30%, #fff3b0, #f2c12e 50%, #b8801a);
+  color: #3a2208;
+  text-shadow: none;
+  cursor: default;
+}
+
+.action--lost {
+  background:
+    linear-gradient(115deg, transparent 46%, rgba(0, 0, 0, 0.5) 47% 49%, transparent 50%),
+    linear-gradient(180deg, #6b2a1c, #3a140c);
+  cursor: default;
+}
+
+.action--waiting small,
+.action--won small,
+.action--lost small {
+  font-size: 15px;
+}
+
+/* auto cash-out: a lever that stops the drill at a depth (multiplier) */
+.depth {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.28);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.depth__word {
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 1.5px;
+  color: #f2c12e;
+}
+
+.switch {
+  position: relative;
+  display: inline-flex;
+  padding: 6px 0;
+  cursor: pointer;
+}
+
+.switch input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.lever .switch__track { /* a metal slot */
+  width: 60px;
+  height: 28px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #1a1d22, #33373e);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.7);
+  padding: 2px;
+  display: flex;
+  align-items: center;
+}
+
+.lever .switch__knob { /* the lever's red ball */
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ff8a6a, #c2281a 60%, #6e0e06);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  transition: transform 0.2s;
+}
+
+.lever input:checked + .switch__track {
+  background: linear-gradient(180deg, #2b5a2e, #1d3e20);
+}
+
+.lever input:checked + .switch__track .switch__knob {
+  transform: translateX(32px);
+  background: radial-gradient(circle at 35% 30%, #a6ff9a, #2fbf5f 60%, #12621f);
+}
+
+.lever input:focus-visible + .switch__track {
+  outline: 2px solid #f2c12e;
+  outline-offset: 2px;
+}
+
+.depth__read {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 8px;
+  height: 40px;
+  border-radius: 8px;
+  border: 2px solid #1a1d22;
+  background:
+    repeating-linear-gradient(90deg, rgba(125, 255, 138, 0.15) 0 1px, transparent 1px 8px),
+    #07110a;
+  color: #7dff8a;
+  font: 800 16px ui-monospace, Menlo, monospace;
+}
+
+.depth__read input {
+  width: 54px;
+  height: 40px;
+  border: 0;
+  background: transparent;
+  text-align: right;
+  font: inherit;
+  color: inherit;
+  outline: none;
+}
+
+@media (min-width: 900px) {
+  .rig__plate {
+    display: grid;
+    grid-template-columns: auto auto auto;
+    grid-template-areas: "stake nuggets bay" "stake depth bay";
+    justify-content: center;
+    align-items: center;
+    gap: 12px 22px;
+    padding: 14px 22px;
+  }
+
+  .stake { grid-area: stake; }
+  .nuggets { grid-area: nuggets; flex-wrap: nowrap; }
+  .depth { grid-area: depth; justify-self: center; }
+  .drill-bay { grid-area: bay; }
+
+  .action {
+    width: clamp(180px, 16vw, 260px);
+    min-height: 104px;
+  }
+}
+
+@media (max-width: 380px) {
+  .gauge__face {
+    width: 96px;
+    height: 96px;
+  }
+
+  .nuggets button {
+    min-width: 56px;
+  }
+}

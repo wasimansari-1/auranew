@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en" style="color-scheme: dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#140830">
+  <title>Spiral Derby — NEXO RNG</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game" id="game">
+    <!-- Phone: the marble machine stays at the top while the race card and the lists scroll under it. -->
+    <div class="sticky" id="sticky">
+      <header class="top" id="top">
+        <button type="button" class="round-btn" id="back" aria-label="Back">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="brand" role="img" aria-label="Spiral Derby">
+          <svg class="brand__mark" viewBox="0 0 48 48" aria-hidden="true">
+            <defs>
+              <linearGradient id="sdGold" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff3cf"/><stop offset=".5" stop-color="#ffcf6b"/><stop offset=".56" stop-color="#e8962f"/><stop offset="1" stop-color="#ffe3a1"/></linearGradient>
+              <radialGradient id="sdBall" cx=".36" cy=".3" r=".8"><stop offset="0" stop-color="#e9d5ff"/><stop offset=".35" stop-color="#a855f7"/><stop offset="1" stop-color="#3b0f7a"/></radialGradient>
+            </defs>
+            <path d="M24 24m0-5a5 5 0 0 1 5 5a9 9 0 0 1-9 9a13 13 0 0 1-13-13a17 17 0 0 1 17-17a19 19 0 0 1 18.6 15" fill="none" stroke="url(#sdGold)" stroke-width="3.4" stroke-linecap="round"/>
+            <circle cx="42" cy="17.5" r="4.6" fill="#ffcf6b" stroke="#7a4a10" stroke-width=".8"/>
+            <circle cx="24" cy="24" r="5.8" fill="url(#sdBall)"/>
+          </svg>
+          <span class="brand__text"><b>SPIRAL DERBY</b><small>8 MARBLES · ONE WINNER</small></span>
+        </div>
+        <div class="wallet">
+          <span class="wallet__label" id="mode">Balance</span>
+          <strong id="balance">—</strong>
+          <button type="button" class="wallet__sound" id="music" aria-label="Music" aria-pressed="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.5V6.2l10-2.2v11.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.6" fill="currentColor"/><circle cx="16.5" cy="15.3" r="2.6" fill="currentColor"/></svg>
+          </button>
+          <button type="button" class="wallet__sound" id="sound" aria-label="Sound" aria-pressed="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <section class="stage" id="stage" aria-label="Spiral Derby marble track">
+        <canvas id="scene" aria-hidden="true"></canvas>
+        <div class="stage__edges" aria-hidden="true"></div>
+        <!-- placed on the play area by app.js -->
+        <div class="play" id="play">
+          <div class="status" id="status" role="status"></div>
+          <div class="timer" id="timer" hidden>
+            <svg viewBox="0 0 100 100" aria-hidden="true">
+              <circle cx="50" cy="50" r="43" class="timer__bg"/>
+              <circle cx="50" cy="50" r="43" class="timer__ring" id="timerRing" pathLength="100"/>
+            </svg>
+            <strong id="timerNum">12</strong><small>BETS</small>
+          </div>
+          <div class="order" id="order" hidden aria-label="Running order"></div>
+          <div class="live" id="live" hidden></div>
+          <div class="result" id="result" hidden>
+            <small id="resTitle">RESULT</small>
+            <div class="podium" id="podium"></div>
+            <div class="tags" id="tags"></div>
+            <div class="banner" id="banner" hidden><small id="bannerTitle">You win</small><b id="bannerWin"></b><em id="bannerSub"></em></div>
+          </div>
+        </div>
+        <div class="conn" id="conn" hidden>Reconnecting…</div>
+      </section>
+
+      <div class="history" id="historyBox" aria-label="Last results"><span class="history__label">LAST</span><div class="history__track" id="history"></div></div>
+    </div>
+
+    <div class="tablewrap" id="tablewrap">
+      <section class="card" id="card" aria-label="Race card">
+        <div class="card__head"><span class="card__title">RACE CARD</span><span class="card__stamp" id="stamp" hidden></span><span class="card__sub" id="cardSub">pick a bet, tap the marbles</span></div>
+        <div class="card__body">
+          <div class="pickpane">
+            <div class="tabs" id="tabs" role="tablist"></div>
+            <div class="pick" id="pick"></div>
+            <div class="hint" id="hint"></div>
+          </div>
+          <div class="slippane">
+            <div class="ticket" id="ticket"><div class="ticket__empty" id="ticketEmpty">Your ticket is empty — tap a marble</div><div class="ticket__rows" id="ticketRows"></div></div>
+            <div class="stake">
+              <button type="button" class="step" id="minus" aria-label="Less">−</button>
+              <div class="amount" id="amount">€0.50</div>
+              <button type="button" class="step" id="plus" aria-label="More">+</button>
+              <div class="quick" id="quick"></div>
+            </div>
+            <button type="button" class="place" id="action"><span id="placeLabel">Tap a marble to bet</span><small id="placeSub"></small></button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="side" id="side">
+      <section class="bets">
+        <div class="bets__tabs" role="tablist">
+          <button type="button" role="tab" class="bets__tab bets__tab--on" data-tab="all" aria-selected="true">All bets</button>
+          <button type="button" role="tab" class="bets__tab" data-tab="mine" aria-selected="false">My bets</button>
+        </div>
+        <div class="bets__count"><span id="countLabel">Bets this race</span> <strong id="betCount">0</strong></div>
+        <div class="bets__cols" id="cols"></div>
+        <div class="bets__list" id="list"></div>
+      </section>
+      <section class="stats" aria-label="Last winners">
+        <div class="stats__head">Wins in the last <b id="statN">0</b> races</div>
+        <div class="freq" id="freq"></div>
+      </section>
+      <div class="links">
+        <button type="button" class="link" id="rulesBtn">Rules &amp; pays</button>
+        <button type="button" class="link" id="fair">Provably fair · race <span id="fRound">—</span></button>
+      </div>
+      <div class="fair__detail" id="fairDetail" hidden>
+        <p>Race hash (published when betting opens)</p>
+        <code id="fHash">—</code>
+        <p>Server seed (revealed after the race)</p>
+        <code id="fSeed">—</code>
+        <p>Check: SHA-256(seed) = hash. The finishing order is a shuffle of 1–8 from HMAC-SHA256(seed, "<span id="fGame">88.0095</span>:race:0") read as unbiased numbers; one more number only sets how the race is animated.</p>
+        <button type="button" class="link" id="fCheckBtn">Recompute the last race’s order from its seed</button>
+        <p id="fCheck" hidden></p>
+      </div>
+    </aside>
+
+    <div class="modal" id="rules" role="dialog" aria-modal="true" aria-labelledby="rulesTitle" hidden>
+      <div class="modal__card">
+        <button type="button" class="modal__close" id="rulesClose" aria-label="Close">×</button>
+        <h2 id="rulesTitle">Spiral Derby — rules &amp; pays</h2>
+        <p>Every 30 seconds eight numbered marbles race down the spiral track — the same race for every player. The finishing order is drawn fairly before the start: every order of the eight marbles is equally likely.</p>
+        <p><b>Bets</b> are open for 12 seconds. Choose a bet type, set your stake and tap the marbles — each pick goes on your ticket (up to 20 bets). Press <b>Place bets</b>, or your ticket is placed for you just before the gate lifts. Then the race runs for about 13 seconds and the marbles park in the finish rack in their finishing order; the result shows for 4 seconds.</p>
+        <table class="paytable">
+          <tr><th>Bet</th><th>Wins when</th><th>Pays</th></tr>
+          <tr><td>Win</td><td>your marble finishes 1st</td><td>7.70×</td></tr>
+          <tr><td>Top 2</td><td>your two marbles finish 1st and 2nd, any order</td><td>27×</td></tr>
+          <tr><td>Exacta</td><td>your 1st and 2nd finish exactly in that order</td><td>54×</td></tr>
+          <tr><td>Top 3</td><td>your three marbles are the first three, any order</td><td>54×</td></tr>
+          <tr><td>Odd / Even</td><td>the winner’s number is odd / even</td><td>1.93×</td></tr>
+          <tr><td>Colour</td><td>the winner is in your colour pair: Fire 1·2, Citrus 3·4, Ocean 5·6, Royal 7·8</td><td>3.86×</td></tr>
+        </table>
+        <p>Pays include your stake (€1 on Win returns €7.70). Return to player (RTP): <b>96.25%</b> (Win), <b>96.43%</b> (Top 2, Exacta, Top 3), <b>96.50%</b> (Odd/Even, Colour).</p>
+        <p>Bet limits for one race (your whole ticket): <b id="rMin">€0.50</b> to <b id="rMax">€500</b>.<span id="rCapLine" hidden> The most one ticket can win in one race is <b id="rCap">—</b>.</span></p>
+        <p class="muted">Malfunction voids all pays and plays.</p>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" hidden></div>
+    <div class="fx" id="fx" aria-hidden="true"></div>
+  </main>
+  <script src="../_core/sound-unlock.js"></script>
+  <script src="../_core/socket-auth.js"></script>
+  <script src="../_core/secure-socket.js"></script>
+  <script src="/nexorng-config.js"></script>
+  <script src="../_core/table-client.js"></script>
+  <script src="rules.js"></script>
+  <script src="race.js"></script>
+  <script src="../_core/players.js"></script>
+  <script src="audio.js"></script>
+  <script type="module" src="app.js"></script>
+  <script src="../_core/fit-screen.js"></script>
+  <script src="../_core/fair.js"></script>
+</body>
+</html>

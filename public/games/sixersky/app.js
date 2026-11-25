@@ -1,0 +1,394 @@
+/* Sixer Sky — NEXORNG crash game. Game logic: ../_core/crash-client.js (live rounds from the engine);
+ * the look and the sounds: scene.js (window.SixerScene / SixerAudio: a real-time 3D scene, see there)
+ * This file: the pitch-side scoreboard bet panels (two bets per round; one on
+ * phones), the bets list, the results row, the texts over the scene and the screen layout. */
+(function () {
+  'use strict';
+
+  var $ = function (id) { return document.getElementById(id); };
+  var game = NXCrash.start({ event: '88.0029', onChange: render, onSignal: onSignal });
+  var S = game.S;
+  var audio = SixerAudio;
+  var scene = SixerScene.create($('scene'), { onLoad: function () { maybeReady(); } });
+
+  // ---------------------------------------------------------------- cricket phrases
+  // A new line every round, picked at random and never the same twice in a row.
+  var PHRASES = {
+    betting: ['Bets are open', 'Next ball coming', 'Field is set', 'Back the big hit', 'A sunny afternoon',
+      'Pick your moment', 'Eyes on the ball', 'Batter on strike', 'The crowd is ready', 'Play on'],
+    crash: ['Caught!', 'Taken at the rope', 'Howzat!', 'Safe hands', 'Plucked from the sky', 'Out! Caught in the deep',
+      'What a catch', 'Held on the boundary', 'Gone, caught', 'The fielder holds on'],
+  };
+  var lastPhrase = {};
+  function phrase(kind) {
+    var list = PHRASES[kind], i = Math.floor(Math.random() * list.length);
+    if (list[i] === lastPhrase[kind]) i = (i + 1) % list.length;
+    return (lastPhrase[kind] = list[i]);
+  }
+  var bettingLine = phrase('betting'), crashLine = phrase('crash');
+
+  // ---------------------------------------------------------------- engine moments
+  var started = false; // a flight was seen starting on this screen (else it was joined mid-flight)
+  function onSignal(name, d) {
+    var now = performance.now();
+    if (name === 'betting') { bettingLine = phrase('betting'); scene.onBetting(now); started = false; }
+    if (name === 'start') { started = true; scene.onStart(now, false); }
+    if (name === 'crash') { crashLine = phrase('crash'); scene.onCrash(now); }
+    if (name === 'win') { scene.onWin(now, '+' + game.money(d.win)); toast(d.text, 'win'); }
+    if (name === 'error') toast(d.text, 'error');
+  }
+
+  var toastTimer;
+  function toast(text, kind) {
+    var t = $('toast');
+    t.textContent = text;
+    t.className = 'toast' + (kind ? ' toast--' + kind : '');
+    t.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.hidden = true; }, 2600);
+  }
+
+  // ---------------------------------------------------------------- render (DOM)
+  var tab = 'all';
+  var playersStrip;
+  function render() {
+    if (!playersStrip) playersStrip = NXPlayers.create(document.querySelector('.stage'));
+    playersStrip.update(S);
+    maybeReady();
+    $('conn').hidden = S.connected || !S.gotSnapshot;
+    setText($('balance'), S.balance == null ? '—' : game.money(S.balance));
+    setText($('mode'), S.demo ? 'Demo balance' : 'Balance');
+
+    var hk = S.history.slice(0, 30).join(',');
+    if (hk !== histKey) {
+      var h = $('history'), fresh = histKey !== '';
+      histKey = hk;
+      h.innerHTML = '';
+      S.history.forEach(function (c, i) {
+        var s = document.createElement('span');
+        s.className = 'chip' + (c >= 10 ? ' chip--big' : c >= 2 ? ' chip--mid' : '') + (i === 0 && fresh ? ' chip--new' : '');
+        s.textContent = c.toFixed(2) + 'x';
+        h.appendChild(s);
+      });
+    }
+    updateButtons();
+    renderList();
+    setText($('fRound'), String(S.round || '—'));
+    setText($('fHash'), S.hash || '—');
+    setText($('fSeed'), S.seed || 'revealed when the round ends');
+  }
+  var histKey = '';
+  function setText(el, text) { if (el.textContent !== text) el.textContent = text; }
+
+  // ---------------------------------------------------------------- the scoreboard bet panels
+  // Built once (never re-rendered): a matte scoreboard with a gold bezel — the stake in an amber LED
+  // window with rubber − / + keys, quick-amount tiles, the Target (auto cash-out) switch with green LED
+  // digits, six "over" lights that count the betting time down, and the action: a willow bat blade
+  // with our NX sticker (BET → armed → CASH OUT, the blade turns green).
+  var CUR = (function () { var s = game.money(0).replace(/[\d.,\s ]/g, ''); return s || '€'; })();
+  var panels = [0, 1].map(function (slot) {
+    var el = document.createElement('section');
+    el.className = 'panel';
+    el.dataset.slot = slot;
+    el.setAttribute('aria-label', 'Bet ' + (slot + 1));
+    el.innerHTML =
+      '<div class="sb">' +
+      '<div class="sb__head"><img src="assets/nx.webp" alt="" width="34" height="17"><span class="sb__title">Bet ' + (slot + 1) + '</span>' +
+      '<span class="over" aria-hidden="true"><span>Over</span><i></i><i></i><i></i><i></i><i></i><i></i></span></div>' +
+      '<div class="sb__body">' +
+      '<div class="sb__left">' +
+      '<div class="stake"><button type="button" class="rub" data-step="-1" aria-label="Decrease bet">−</button>' +
+      '<label class="led"><span class="led__cur"></span><input class="amount" inputmode="decimal" value="1.00" aria-label="Bet amount"></label>' +
+      '<button type="button" class="rub" data-step="1" aria-label="Increase bet">+</button></div>' +
+      '<div class="quick" aria-label="Quick amounts"></div>' +
+      '<div class="target"><span class="lbl">Target<small>auto cash-out</small></span>' +
+      '<label class="sw"><input type="checkbox" class="auto__on" aria-label="Auto cash out"><span class="sw__track"></span></label>' +
+      '<label class="led led--x"><input class="auto__x" inputmode="decimal" value="2.00" aria-label="Auto cash-out multiplier"><span>x</span></label></div>' +
+      '</div>' +
+      '<div class="batcol"><span class="grip" aria-hidden="true"></span>' +
+      '<button type="button" class="action"><span class="stk" aria-hidden="true"><img src="assets/nx.webp" alt="" width="34" height="17"></span>' +
+      '<span class="action__label">BET</span><small class="action__sub"></small></button></div>' +
+      '</div></div>';
+    $('panels').appendChild(el);
+    var q = function (sel) { return el.querySelector(sel); };
+    q('.led__cur').textContent = CUR;
+    return { slot: slot, el: el, amount: q('.amount'), action: q('.action'), label: q('.action__label'), sub: q('.action__sub'), autoOn: q('.auto__on'), autoAt: q('.auto__x'), quick: q('.quick'), balls: el.querySelectorAll('.over i'), lit: -1 };
+  });
+
+  function readAmount(p) {
+    var v = Number(String(p.amount.value).replace(',', '.'));
+    return isFinite(v) && v > 0 ? game.round2(v) : 0;
+  }
+  function readAuto(p) {
+    if (!p.autoOn.checked) return 0;
+    var v = Number(String(p.autoAt.value).replace(',', '.'));
+    return isFinite(v) && v >= 1.01 ? Math.round(v * 100) / 100 : 0;
+  }
+
+  function updateButtons() { panels.forEach(updateButton); }
+  function updateButton(p) {
+    var my = S.my[p.slot], cls = 'action', label = 'BET', sub = (S.phase === 'betting' ? '' : 'next · ') + game.money(readAmount(p)), disabled = false;
+    var mine = my && my.round === S.round;
+    if (S.queued[p.slot]) {
+      cls = 'action action--cancel'; label = 'CANCEL'; sub = 'next ball';
+    } else if (mine && my.status === 'pending') {
+      cls = 'action action--armed'; label = 'PLACING…'; sub = ''; disabled = true;
+    } else if (mine && my.status === 'placed' && S.phase === 'betting') {
+      cls = 'action action--armed'; label = 'IN PLAY'; sub = game.money(my.amount); disabled = true;
+    } else if (mine && (my.status === 'placed' || my.status === 'cashing') && S.phase === 'flying') {
+      cls = 'action action--cashout'; label = 'CASH OUT'; sub = game.money(game.round2(my.amount * game.currentMult())); disabled = my.status === 'cashing';
+    }
+    if (p.action.className !== cls) p.action.className = cls;
+    if (p.action.disabled !== disabled) p.action.disabled = disabled;
+    setText(p.label, label);
+    if (p.sub.textContent !== sub) { p.sub.textContent = sub; fitLabel(p); }
+    if (p.fitFor !== label) { p.fitFor = label; fitLabel(p); }
+  }
+  // the blade's words never wrap or spill: shrink to fit (phones 360–440 px wide)
+  function fitLabel(p) {
+    [p.label, p.sub].forEach(function (el) {
+      el.style.fontSize = '';
+      var max = p.action.clientWidth - 14;
+      if (max <= 0) return;
+      var w = el.scrollWidth, fs = parseFloat(getComputedStyle(el).fontSize);
+      if (w > max) el.style.fontSize = Math.max(9, Math.floor(fs * max / w * 10) / 10) + 'px';
+    });
+  }
+  // the over: one light per second of the betting time; all six while the ball flies
+  function updateOver() {
+    var n = 0;
+    if (S.phase === 'betting') n = clampInt(Math.floor((Date.now() - S.bettingStartsAt) / 1000) + 1, 0, 6);
+    else if (S.phase === 'flying') n = 6;
+    panels.forEach(function (p) {
+      if (p.lit === n) return;
+      p.lit = n;
+      Array.prototype.forEach.call(p.balls, function (b, i) { b.className = i < n ? 'on' : ''; });
+    });
+  }
+  function clampInt(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+  // ---------------------------------------------------------------- bets list
+  function cell(text, cls) {
+    var s = document.createElement('span');
+    if (cls) s.className = cls;
+    s.textContent = text;
+    return s;
+  }
+  var listKey = '';
+  function renderList() {
+    var key = tab + '|' + S.bets.map(function (b) { return b.player + ':' + b.amount + ':' + (b.x || '') + ':' + (b.mine ? 1 : 0); }).join(',') + '|' +
+      S.myBets.map(function (b) { return b.at + ':' + (b.x || ''); }).join(',');
+    if (key === listKey) return; // rebuilt only when a bet or a cash-out changes it
+    listKey = key;
+    var list = $('list');
+    list.innerHTML = '';
+    if (tab === 'all') {
+      setText($('countLabel'), 'All bets');
+      setText($('betCount'), String(S.bets.length));
+      $('cols').innerHTML = '<span>Player</span><span>Bet</span><span>X</span><span>Win</span>';
+      if (!S.bets.length) list.appendChild(cell('No bets yet this round.', 'empty'));
+      S.bets.slice().reverse().forEach(function (b) {
+        var row = document.createElement('div');
+        row.className = 'row' + (b.x ? ' row--cashed' : '') + (b.mine ? ' row--mine' : '');
+        row.appendChild(cell(b.mine ? 'You' : b.player, 'row__user'));
+        row.appendChild(cell(Number(b.amount).toFixed(2)));
+        row.appendChild(cell(b.x ? b.x.toFixed(2) + 'x' : '-', 'row__x'));
+        row.appendChild(cell(b.win ? Number(b.win).toFixed(2) : '-', 'row__win'));
+        list.appendChild(row);
+      });
+    } else {
+      setText($('countLabel'), 'My bets');
+      setText($('betCount'), String(S.myBets.length));
+      $('cols').innerHTML = '<span>Time</span><span>Bet</span><span>X</span><span>Win</span>';
+      if (!S.myBets.length) list.appendChild(cell('Your bets this visit show here.', 'empty'));
+      S.myBets.forEach(function (b) {
+        var row = document.createElement('div');
+        row.className = 'row' + (b.x ? ' row--cashed' : '');
+        row.appendChild(cell(new Date(b.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })));
+        row.appendChild(cell(b.amount.toFixed(2)));
+        row.appendChild(cell(b.x ? b.x.toFixed(2) + 'x' : '-', 'row__x'));
+        row.appendChild(cell(b.win ? b.win.toFixed(2) : '-', 'row__win'));
+        list.appendChild(row);
+      });
+    }
+  }
+
+  // ---------------------------------------------------------------- layout
+  var stageEl = document.querySelector('.stage'), canvas = $('scene');
+  var view = { W: 0, H: 0, TOP: 0, LEFT: 0, FULL_W: 0, FULL_H: 0, dpr: 1 };
+  function fit() {
+    var r = stageEl.getBoundingClientRect();
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var bar = document.querySelector('.top').getBoundingClientRect();
+    var list = document.querySelector('.bets').getBoundingClientRect();
+    var hist = document.querySelector('.history').getBoundingClientRect();
+    var wide = window.innerWidth >= 900;
+    var TOP = Math.max(0, bar.bottom - r.top + 6);
+    // Only on wide screens is the bets list beside the scene. On a phone it is below, and when the page is
+    // scrolled it slides under the scene (which stays on top) — that must not push the play area aside.
+    var LEFT = window.matchMedia('(min-width: 900px)').matches && list.right > r.left && list.top < r.bottom && list.left < r.left + r.width / 2 ? Math.max(0, list.right - r.left + 8) : 0;
+    var playBottom = hist.top > r.top && hist.top < r.bottom ? hist.top - r.top - 8 : r.height;
+    view = { W: r.width - LEFT, H: Math.max(120, playBottom - TOP), TOP: TOP, LEFT: LEFT, FULL_W: r.width, FULL_H: r.height, dpr: dpr };
+    stageEl.style.setProperty('--below', Math.max(0, r.height - playBottom) + 'px');
+    stageEl.style.setProperty('--left', LEFT + 'px');
+    // the win toast: low in the play area, above the players strip — never over the multiplier
+    document.documentElement.style.setProperty('--toast-top', Math.round(Math.max(0, r.top) + playBottom - (wide ? 64 : 104)) + 'px');
+    // the texts: centred on the play area, at its top (the batsman / the ball stay below them)
+    var PH = TOP + view.H, textTop = wide ? Math.max(Math.round(PH * 0.06), TOP - 4) : TOP;
+    var c = document.querySelector('.stage__center').style;
+    c.left = LEFT + 'px'; c.top = textTop + 'px'; c.width = view.W + 'px'; c.height = (PH - textTop) + 'px';
+    var m = Math.min(view.W * 1.1, PH), mf = Math.round(m * (wide ? 0.15 : 0.17)), tf = Math.max(13, Math.round(m * 0.04));
+    stageEl.style.setProperty('--mf', mf + 'px');
+    stageEl.style.setProperty('--tf', tf + 'px');
+    var cw = Math.round(r.width * dpr), ch = Math.round(r.height * dpr);
+    if (canvas.width !== cw) canvas.width = cw;
+    if (canvas.height !== ch) canvas.height = ch;
+    scene.resize(view);
+    panels.forEach(fitLabel);
+    if (drawn) draw(performance.now(), 0);
+  }
+  window.addEventListener('resize', fit);
+  if (window.ResizeObserver) {
+    var ro = new ResizeObserver(function () { fit(); });
+    ['.history', '.bets', '.top', '.stage'].forEach(function (sel) { var e = document.querySelector(sel); if (e) ro.observe(e); });
+  }
+
+  // ---------------------------------------------------------------- every frame
+  var lastT = 0, themeAt = 0, drawn = false;
+  function frame(now) {
+    var dt = lastT ? Math.min(100, now - lastT) : 16;
+    lastT = now;
+    draw(now, dt);
+    requestAnimationFrame(frame);
+  }
+  var FS = { phase: '', mult: 1, rollIn: null, flightMs: null }; // the scene's frame state, reused
+  function draw(now, dt) {
+    drawn = true;
+    if (!announced) maybeReady();
+    var mult = S.phase === 'flying' ? game.currentMult() : S.mult;
+    // joined a flight in progress (no start seen here): straight into the climb
+    if (S.phase === 'flying' && !started) { started = true; scene.onStart(now, true, Date.now() - S.flightStart); }
+    var rollIn = S.phase === 'betting' ? S.bettingEndsAt - Date.now() : null;
+    FS.phase = S.phase; FS.mult = mult; FS.rollIn = rollIn; FS.flightMs = S.phase === 'flying' ? Date.now() - S.flightStart : null;
+    scene.frame(now, dt, FS);
+    audio.tick(S.phase === 'flying' ? 'flying' : S.phase === 'crashed' ? 'end' : 'ground', mult);
+    if (now - themeAt > 400) { themeAt = now; game.theme(scene.topColor(now)); }
+    updateOver();
+
+    var m = $('mult'), hint = $('hint'), flew = $('flew');
+    if (S.phase === 'flying') {
+      setClass(m, 'mult');
+      setText(m, mult.toFixed(2) + 'x'); swap(hint, ''); flew.hidden = true;
+      if (S.my[0] || S.my[1]) updateButtons();
+    } else if (S.phase === 'crashed' || (S.phase === 'betting' && scene.holding() && S.crashPoint)) { // the catch stays until the wipe home
+      setClass(m, 'mult mult--crashed');
+      setText(m, S.crashPoint.toFixed(2) + 'x'); swap(hint, '');
+      flew.hidden = false; swap(flew, crashLine);
+    } else if (S.phase === 'betting') {
+      setClass(m, 'mult mult--phrase'); flew.hidden = true;
+      swap(m, bettingLine);
+      var left = Math.max(0, (S.bettingEndsAt - Date.now()) / 1000);
+      setText(hint, left > 0.05 ? 'Next ball in ' + left.toFixed(1) + ' s' : 'Here it comes…');
+    } else {
+      setClass(m, 'mult mult--phrase'); flew.hidden = true; setText(m, '');
+      setText(hint, S.gotSnapshot ? 'Waiting for the next ball…' : 'Connecting…');
+    }
+  }
+  function setClass(el, c) { if (el.className !== c) el.className = c; }
+  function swap(el, text) { // a new line eases in
+    if (el.textContent === text) return;
+    el.textContent = text;
+    el.classList.remove('is-in'); void el.offsetWidth; el.classList.add('is-in');
+  }
+
+  // The NEXORNG loader stays up until the first screen (the batsman at the crease) and the round are known.
+  var announced = false, firstFrame = false;
+  function maybeReady() {
+    if (announced || !firstFrame || !scene.ready() || !S.gotSnapshot) return;
+    announced = true;
+    game.ready();
+  }
+  setTimeout(function () { if (!announced) { announced = true; game.ready(); } }, 8000);
+
+  // ---------------------------------------------------------------- controls
+  function setAmount(p, v) {
+    var l = game.limit();
+    v = Math.max(l.min, game.round2(v));
+    if (l.max) v = Math.min(l.max, v);
+    p.amount.value = v.toFixed(2);
+    Array.prototype.forEach.call(p.quick.children, function (b) { b.classList.toggle('tile--on', Number(b.dataset.v) === v); });
+    updateButton(p);
+  }
+  function buildQuick(p) { // 1×, 2×, 5×, 10× the min bet (within the max)
+    var l = game.limit();
+    p.quick.innerHTML = '';
+    [1, 2, 5, 10].forEach(function (k) {
+      var v = game.round2(l.min * k);
+      if (l.max && v > l.max) return;
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'tile'; b.dataset.v = v;
+      b.textContent = game.money(v).replace(CUR, '').trim();
+      b.setAttribute('aria-label', 'Bet ' + game.money(v));
+      b.onclick = function () { audio.click(); setAmount(p, v); };
+      p.quick.appendChild(b);
+    });
+  }
+  game.limitsLoaded.then(function (l) { panels.forEach(function (p) { buildQuick(p); setAmount(p, l.min); }); });
+
+  panels.forEach(function (p) {
+    Array.prototype.forEach.call(p.el.querySelectorAll('.rub'), function (b) {
+      b.onclick = function () { audio.click(); setAmount(p, readAmount(p) + Number(b.dataset.step) * game.limit().min); };
+    });
+    p.amount.oninput = function () { updateButton(p); };
+    p.amount.onblur = function () { setAmount(p, readAmount(p) || game.limit().min); };
+    p.autoOn.onchange = function () { audio.click(); p.el.classList.toggle('panel--auto', p.autoOn.checked); };
+    p.autoAt.onblur = function () { var v = Number(String(p.autoAt.value).replace(',', '.')); p.autoAt.value = (isFinite(v) && v >= 1.01 ? v : 2).toFixed(2); };
+    p.action.onclick = function () {
+      audio.unlock(true); audio.click();
+      if (S.queued[p.slot]) return game.cancelQueued(p.slot);
+      var my = S.my[p.slot];
+      if (my && my.round === S.round && my.status === 'placed' && S.phase === 'flying') return game.cashOut(p.slot);
+      if (my && my.round === S.round && my.status !== 'lost' && my.status !== 'cashed') return;
+      game.bet(p.slot, readAmount(p), readAuto(p));
+    };
+  });
+
+  var tabs = document.querySelectorAll('.bets__tab');
+  Array.prototype.forEach.call(tabs, function (b) {
+    b.onclick = function () {
+      audio.click();
+      tab = b.dataset.tab;
+      Array.prototype.forEach.call(tabs, function (x) {
+        var on = x === b;
+        x.className = 'bets__tab' + (on ? ' bets__tab--on' : '');
+        x.setAttribute('aria-selected', String(on));
+      });
+      renderList();
+    };
+  });
+  $('back').onclick = function () { audio.click(); game.back(); };
+  $('fair').onclick = function () { $('fairDetail').hidden = !$('fairDetail').hidden; };
+
+  // sound + music: separate switches, remembered; music starts as the game opens (or on the first tap)
+  function pref(name, dflt) { try { var v = localStorage.getItem('sixersky-' + name); return v == null ? dflt : v !== 'off'; } catch (e) { return dflt; } }
+  function savePref(name, on) { try { localStorage.setItem('sixersky-' + name, on ? 'on' : 'off'); } catch (e) { /* ignore */ } }
+  var soundOn = pref('sound', true), musicOn = pref('music', true);
+  function syncAudio() {
+    audio.setSound(soundOn);
+    audio.setMusic(musicOn);
+    $('sound').setAttribute('aria-pressed', String(soundOn));
+    $('sound').setAttribute('aria-label', soundOn ? 'Sound on' : 'Sound off');
+    $('music').setAttribute('aria-pressed', String(musicOn));
+    $('music').setAttribute('aria-label', musicOn ? 'Music on' : 'Music off');
+  }
+  $('sound').onclick = function () { audio.unlock(true); soundOn = !soundOn; savePref('sound', soundOn); syncAudio(); audio.click(); };
+  $('music').onclick = function () { audio.unlock(true); musicOn = !musicOn; savePref('music', musicOn); syncAudio(); };
+  window.addEventListener('pointerdown', function () { audio.unlock(true); }, true);
+  document.addEventListener('visibilitychange', function () { audio.pause(document.hidden); });
+  window.addEventListener('nexorng:ready', function () { audio.unlock(); }, { once: true });
+
+  syncAudio();
+  fit();
+  render();
+  requestAnimationFrame(function (t) { firstFrame = true; frame(t); maybeReady(); });
+})();

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en" style="color-scheme: dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#141a3a">
+  <title>Arrow Flight — NEXO RNG</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-event="88.0017" data-key="arrowflight" data-bet="DRAW" data-cashout="CATCH" data-won="BULLSEYE">
+  <main class="game">
+    <!-- Stays at the top while the bet panel and the bets list scroll under it (phone). -->
+    <div class="sticky">
+      <header class="top">
+        <button type="button" class="round-btn" id="back" aria-label="Back">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="logo" role="img" aria-label="Arrow Flight"><svg class="logo__icon" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="20" fill="#141a3a" stroke="#57e3ff" stroke-width="2.5"/><path d="M11 33 33 15" stroke="#e8d1a0" stroke-width="3.5" stroke-linecap="round"/><path d="m29 12 9-3-3 9z" fill="#e8fbff" stroke="#e8fbff" stroke-width="2" stroke-linejoin="round"/><path d="m11 33-3-6 6 3m-3 3 6 3-3-6" fill="none" stroke="#57e3ff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="logo__word">Arrow<b>Flight</b></span></div>
+        <div class="wallet">
+          <span class="wallet__label" id="mode">Balance</span>
+          <strong id="balance">—</strong>
+          <button type="button" class="wallet__sound" id="music" aria-label="Music on" aria-pressed="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.5V6.2l10-2.2v11.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.6" fill="currentColor"/><circle cx="16.5" cy="15.3" r="2.6" fill="currentColor"/></svg>
+          </button>
+          <button type="button" class="wallet__sound" id="sound" aria-label="Sound on" aria-pressed="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <section class="stage" aria-label="Arrow Flight">
+        <canvas id="scene" aria-hidden="true"></canvas>
+        <div class="stage__edges" aria-hidden="true"></div>
+        <div class="stage__center">
+          <div class="flew" id="flew" hidden></div>
+          <div class="mult" id="mult"></div>
+          <div class="hint" id="hint"></div>
+        </div>
+        <div class="conn" id="conn" hidden>Reconnecting…</div>
+      </section>
+
+      <div class="history" aria-label="My last results"><div class="history__track" id="history"></div></div>
+    </div>
+
+    <!-- The archer's quiver: a carved stake dial, fletching quick amounts, the DRAW bow (it turns
+         into CATCH to cash out) and the auto-catch distance marker. -->
+    <div class="panels">
+      <section class="panel quiver" aria-label="Your bet">
+        <div class="panel__inner quiver__wood">
+          <span class="strap" aria-hidden="true"></span>
+          <div class="stake">
+            <button type="button" class="tip tip--left" id="minus" aria-label="Decrease bet"><span>−</span></button>
+            <div class="dial">
+              <span class="dial__runes" aria-hidden="true"></span>
+              <label class="dial__face"><span class="sr">Bet amount</span><input class="amount" id="amount" inputmode="decimal" value="1.00"></label>
+              <span class="dial__word" aria-hidden="true">STAKE</span>
+            </div>
+            <button type="button" class="tip tip--right" id="plus" aria-label="Increase bet"><span>+</span></button>
+          </div>
+          <div class="quick fletchings" id="quick" aria-label="Quick amounts"></div>
+          <button type="button" class="action" id="action">
+            <span class="bow" aria-hidden="true"><span class="bow__limb"></span><span class="bow__string"></span><span class="bow__arrow"></span></span>
+            <span class="action__text"><span id="actionLabel">DRAW</span><small id="actionSub"></small></span>
+          </button>
+          <div class="auto marker">
+            <span class="marker__word">AUTO CATCH AT</span>
+            <label class="switch rune"><input type="checkbox" id="autoOn" aria-label="Auto cash out"><span class="switch__track"><span class="switch__knob"></span></span></label>
+            <label class="marker__flag"><span class="sr">Auto cash-out multiplier</span><input class="auto__x" id="autoAt" inputmode="decimal" value="2.00"><span aria-hidden="true">x</span></label>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="bets">
+      <div class="bets__head">
+        <div class="bets__tabs" role="tablist">
+          <button type="button" role="tab" class="bets__tab bets__tab--on" data-tab="all" aria-selected="true">All bets</button>
+          <button type="button" role="tab" class="bets__tab" data-tab="mine" aria-selected="false">My bets</button>
+        </div>
+        <div class="bets__count"><span id="countLabel">All bets</span> <strong id="betCount">0</strong></div>
+      </div>
+      <div class="bets__cols" id="cols"><span>Player</span><span>Bet</span><span>X</span><span>Win</span></div>
+      <div class="bets__list" id="list"></div>
+      <p class="fair" id="fair">Provably fair · your own round every time</p>
+      <div class="fair__detail" id="fairDetail" hidden>
+        <p>Result hash (given when your round starts)</p>
+        <code id="fHash">—</code>
+        <p>Seed (revealed when your round ends)</p>
+        <code id="fSeed">—</code>
+        <p>Check: SHA-256(seed) = hash.</p>
+      </div>
+    </section>
+
+    <div class="toast" id="toast" role="status" hidden></div>
+  </main>
+  <script src="../_core/sound-unlock.js"></script>
+  <script src="../_core/socket-auth.js"></script>
+  <script src="../_core/secure-socket.js"></script>
+  <script src="/nexorng-config.js"></script>
+  <script src="../_core/phrases.js"></script>
+  <script src="../_core/solo-client.js"></script>
+  <script src="scene.js"></script>
+  <script src="app.js"></script>
+  <script src="../_core/fit-screen.js"></script>
+  <script src="../_core/fair.js"></script>
+</body>
+</html>

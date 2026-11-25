@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en" style="color-scheme: dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#3a1c5c">
+  <title>Kite Flyer — NEXO RNG</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game">
+    <!-- Stays at the top while the bet panel and the list scroll under it. -->
+    <div class="sticky">
+      <header class="top">
+        <button type="button" class="round-btn" id="back" aria-label="Back">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="logo" aria-label="Kite Flyer"><svg viewBox="0 0 34 34" aria-hidden="true" class="logo__icon"><path d="M17 2 L29 14 L17 30 L5 14 Z" fill="#ff4f9a"/><path d="M17 2 L29 14 L17 14 Z" fill="#ffd23f"/><path d="M5 14 L17 14 L17 30 Z" fill="#3ec7ff"/><path d="M17 14 L29 14 L17 30 Z" fill="#7a5cff"/><path d="M17 30 q-4 2 -2 4" stroke="#fff" stroke-width="1.4" fill="none"/></svg><span class="logo__text">Kite<b>Flyer</b></span></div>
+        <div class="wallet">
+          <span class="wallet__label" id="mode">Balance</span>
+          <strong id="balance">—</strong>
+          <button type="button" class="wallet__sound" id="music" aria-label="Music on" aria-pressed="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.5V6.2l10-2.2v11.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.6" fill="currentColor"/><circle cx="16.5" cy="15.3" r="2.6" fill="currentColor"/></svg>
+          </button>
+          <button type="button" class="wallet__sound" id="sound" aria-label="Sound on" aria-pressed="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <section class="stage" aria-label="Kite Flyer">
+        <canvas id="scene" aria-hidden="true"></canvas>
+        <div class="stage__edges" aria-hidden="true"></div>
+        <div class="stage__center">
+          <div class="flew" id="flew" hidden></div>
+          <div class="mult" id="mult"></div>
+          <div class="hint" id="hint"></div>
+        </div>
+        <div class="conn" id="conn" hidden>Reconnecting…</div>
+      </section>
+
+      <div class="history" aria-label="My last results"><div class="history__track" id="history"></div></div>
+    </div>
+
+    <!-- The kite-string console: the amount sits on the string reel, quick amounts are kite
+         tails, Bet / Cash Out is the pull-the-string handle, auto cash-out is the string length. -->
+    <div class="panels">
+      <section class="console" aria-label="Your bet">
+        <div class="console__bunting" aria-hidden="true"></div>
+        <div class="console__main">
+          <div class="reel">
+            <button type="button" class="reel__wind" id="minus" aria-label="Decrease bet"><span aria-hidden="true">−</span></button>
+            <div class="reel__spool"><div class="reel__hub"><span class="reel__label">Bet</span><input id="amount" inputmode="decimal" value="1.00" aria-label="Bet amount"></div></div>
+            <button type="button" class="reel__wind" id="plus" aria-label="Increase bet"><span aria-hidden="true">+</span></button>
+          </div>
+          <div class="handle">
+            <span class="handle__string" aria-hidden="true"></span>
+            <button type="button" class="action" id="action"><span id="actionLabel">Bet</span><small id="actionSub"></small></button>
+          </div>
+        </div>
+        <div class="tails quick" id="quick" aria-label="Quick amounts"></div>
+        <div class="tape">
+          <span class="tape__text">Auto reel-in at</span>
+          <label class="knot-switch">
+            <input type="checkbox" id="autoOn" aria-label="Auto cash out">
+            <span class="knot-switch__track"><span class="knot-switch__knob"></span></span>
+          </label>
+          <input class="tape__x" id="autoAt" inputmode="decimal" value="2.00" aria-label="Auto cash-out multiplier"><b>x</b>
+        </div>
+      </section>
+    </div>
+
+    <section class="bets">
+      <div class="bets__head">
+        <div class="bets__tabs" role="tablist">
+          <button type="button" role="tab" class="bets__tab bets__tab--on" data-tab="all" aria-selected="true">All rounds</button>
+          <button type="button" role="tab" class="bets__tab" data-tab="mine" aria-selected="false">My rounds</button>
+        </div>
+        <div class="bets__count"><span id="countLabel">Recent rounds</span> <strong id="betCount">0</strong></div>
+      </div>
+      <div class="bets__cols"><span>Player</span><span>Bet</span><span>X</span><span>Win</span></div>
+      <div class="bets__list" id="list"></div>
+      <p class="fair" id="fair">Provably fair — how it works</p>
+      <div class="fair__detail" id="fairDetail" hidden>
+        <p>Your round's hash (given when it starts)</p>
+        <code id="fHash">—</code>
+        <p>Seed (revealed when it ends)</p>
+        <code id="fSeed">—</code>
+        <p>Check: SHA-256(seed) = hash.</p>
+      </div>
+    </section>
+
+    <div class="toast" id="toast" role="status" hidden></div>
+  </main>
+  <script src="../_core/sound-unlock.js"></script>
+  <script src="../_core/socket-auth.js"></script>
+  <script src="../_core/secure-socket.js"></script>
+  <script src="/nexorng-config.js"></script>
+  <script src="../_core/phrases.js"></script>
+  <script src="../_core/solo-client.js"></script>
+  <script src="scene.js"></script>
+  <script src="ui.js"></script>
+  <script src="../_core/fit-screen.js"></script>
+  <script src="../_core/fair.js"></script>
+</body>
+</html>

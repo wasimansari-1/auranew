@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en" style="color-scheme: dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0716">
+  <title>Dice Duel — NEXO RNG</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game">
+    <!-- Stays at the top on phones while the bet panel and bets list scroll under it. -->
+    <div class="sticky">
+      <header class="top">
+        <button type="button" class="round-btn" id="back" aria-label="Back">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="logo" aria-label="Dice Duel">
+          <svg viewBox="0 0 190 44" aria-hidden="true">
+            <defs>
+              <linearGradient id="lg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff6d6"/><stop offset=".55" stop-color="#ffc94d"/><stop offset="1" stop-color="#e07b12"/></linearGradient>
+            </defs>
+            <g transform="translate(4 8) rotate(-12 13 13)"><rect width="26" height="26" rx="6" fill="#2ee6c5"/><circle cx="8" cy="8" r="2.6" fill="#0b0716"/><circle cx="18" cy="18" r="2.6" fill="#0b0716"/><circle cx="13" cy="13" r="2.6" fill="#0b0716"/></g>
+            <text x="40" y="31" font-family="Impact, 'Arial Black', system-ui, sans-serif" font-size="27" letter-spacing="1" fill="url(#lg)" stroke="#3a1505" stroke-width="1.2" paint-order="stroke">DICE DUEL</text>
+          </svg>
+        </div>
+        <div class="wallet">
+          <span class="wallet__label" id="mode">Balance</span>
+          <strong id="balance">—</strong>
+          <button type="button" class="wallet__sound" id="music" aria-label="Music on" aria-pressed="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.5V6.2l10-2.2v11.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.6" fill="currentColor"/><circle cx="16.5" cy="15.3" r="2.6" fill="currentColor"/></svg>
+          </button>
+          <button type="button" class="wallet__sound" id="sound" aria-label="Sound on" aria-pressed="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <section class="stage" aria-label="The duel">
+        <canvas id="scene" aria-hidden="true"></canvas>
+        <div class="stage__edges" aria-hidden="true"></div>
+        <!-- The arena is placed on the play area by app.js (below the bar, above the results row). -->
+        <div class="arena" id="arena">
+          <div class="side side--you" id="sideYou">
+            <span class="side__tag">You</span>
+            <div class="die-wrap"><div class="die" id="dieYou" aria-hidden="true"></div><div class="die-shadow"></div></div>
+            <span class="side__value" id="valYou">?</span>
+          </div>
+          <div class="vs" aria-hidden="true"><span>VS</span></div>
+          <div class="side side--house" id="sideHouse">
+            <span class="side__tag">House</span>
+            <div class="die-wrap"><div class="die" id="dieHouse" aria-hidden="true"></div><div class="die-shadow"></div></div>
+            <span class="side__value" id="valHouse">?</span>
+          </div>
+          <div class="verdict" id="verdict" aria-live="polite" hidden>
+            <strong id="verdictTitle"></strong>
+            <span id="verdictSub"></span>
+          </div>
+          <p class="hint" id="hint"></p>
+        </div>
+        <div class="conn" id="conn" hidden>Reconnecting…</div>
+      </section>
+
+      <div class="history" aria-label="Last duels"><div class="history__track" id="history"></div></div>
+    </div>
+
+    <section class="panel" aria-label="Your bet">
+      <div class="panel__inner">
+        <div class="stepper">
+          <button type="button" class="stepper__btn" id="minus" aria-label="Decrease bet">−</button>
+          <input class="amount" id="amount" inputmode="decimal" value="1.00" aria-label="Bet amount">
+          <button type="button" class="stepper__btn" id="plus" aria-label="Increase bet">+</button>
+        </div>
+        <div class="quick" id="quick" aria-label="Quick amounts"></div>
+        <div class="payout" id="payout">
+          <span>Higher die wins <b id="payX">—</b> · <b id="payWin">—</b></span>
+          <span class="payout__push">Tie returns your bet</span>
+        </div>
+        <button type="button" class="action" id="roll"><span class="action__label" id="rollLabel">Roll</span><small class="action__sub" id="rollSub"></small></button>
+        <div class="auto">
+          <span class="auto__label">Auto duel</span>
+          <div class="auto__chips" id="autoChips" role="group" aria-label="Number of automatic duels"></div>
+          <label class="auto__stop"><input type="checkbox" id="stopOnWin"> Stop on win</label>
+        </div>
+      </div>
+    </section>
+
+    <section class="bets">
+      <div class="record" id="record" aria-label="Your duel record this visit">
+        <div><b id="recW">0</b><span>Wins</span></div>
+        <div><b id="recP">0</b><span>Pushes</span></div>
+        <div><b id="recL">0</b><span>Losses</span></div>
+        <div><b id="recNet">0.00</b><span>Net</span></div>
+      </div>
+      <div class="bets__tabs" role="tablist">
+        <button type="button" role="tab" class="bets__tab bets__tab--on" data-tab="all" aria-selected="true">All bets</button>
+        <button type="button" role="tab" class="bets__tab" data-tab="mine" aria-selected="false">My bets</button>
+      </div>
+      <div class="bets__cols"><span>Player</span><span>Bet</span><span>Duel</span><span>Win</span></div>
+      <div class="bets__list" id="list"></div>
+      <button type="button" class="fair" id="fair" aria-expanded="false">Provably fair · round <span id="fRound">—</span></button>
+      <div class="fair__detail" id="fairDetail" hidden>
+        <p>Result hash (sha256 of the server seed)</p>
+        <code id="fHash">—</code>
+        <p>Server seed (revealed with the result)</p>
+        <code id="fSeed">—</code>
+        <label class="fair__client">Your client seed <input id="clientSeed" maxlength="64" spellcheck="false" autocomplete="off"></label>
+        <p class="fair__note">Each die = (4 bytes of HMAC-SHA256(server seed, client seed:game:round)) mod 6 + 1 — first die yours, second the house's. Check: sha256(server seed) = hash.</p>
+      </div>
+    </section>
+
+    <div class="toast" id="toast" role="status" hidden></div>
+  </main>
+  <script src="../_core/sound-unlock.js"></script>
+  <script src="../_core/socket-auth.js"></script>
+  <script src="../_core/secure-socket.js"></script>
+  <script src="/nexorng-config.js"></script>
+  <script src="../_core/instant-client.js"></script>
+  <script src="app.js"></script>
+  <script src="../_core/fit-screen.js"></script>
+  <script src="../_core/fair.js"></script>
+</body>
+</html>

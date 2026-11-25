@@ -1,0 +1,1111 @@
+/* Lucky Six — an emerald-velvet dice table with gold trim (original NEXORNG design). */
+:root {
+  --bg: #03120d;
+  --bg-2: #062018;
+  --panel: #0c2c22;
+  --panel-2: #061a13;
+  --line: rgba(242, 194, 91, 0.28);
+  --gold: #f2c25b;
+  --gold-2: #ffe29a;
+  --gold-3: #b9862b;
+  --jade: #23e39a;
+  --ruby: #ff4d6d;
+  --text: #f3fff9;
+  --muted: #9cc7b5;
+  --die: 0px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.3 "Avenir Next", "Segoe UI", system-ui, -apple-system, Roboto, "Noto Sans", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+body {
+  background:
+    radial-gradient(120% 60% at 50% 0%, #0b3326 0%, rgba(3, 18, 13, 0) 70%),
+    var(--bg);
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.game {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 10px calc(16px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── the game screen (sticky on phones) ── */
+.sticky {
+  --top-h: calc(58px + env(safe-area-inset-top, 0px));
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin: 0 -10px;
+  padding: 0 0 8px;
+  background: var(--bg);
+}
+
+.sticky::after { /* soft edge where the fixed screen meets the page below */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -18px;
+  height: 18px;
+  background: linear-gradient(180deg, var(--bg), rgba(3, 18, 13, 0));
+  pointer-events: none;
+}
+
+.top {
+  position: absolute;
+  z-index: 6;
+  top: calc(8px + env(safe-area-inset-top, 0px));
+  left: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.round-btn {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--gold);
+  background: rgba(3, 18, 13, 0.7);
+  color: var(--gold-2);
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+.round-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* logo: a tiny gold die + "Lucky Six" */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: auto;
+  min-width: 0;
+}
+
+.logo__die {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: linear-gradient(145deg, var(--gold-2), var(--gold) 55%, var(--gold-3));
+  box-shadow: 0 0 14px rgba(242, 194, 91, 0.55), inset 0 -2px 0 rgba(0, 0, 0, 0.25);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  padding: 5px 6px;
+  gap: 2px 6px;
+}
+
+.logo__die i {
+  border-radius: 50%;
+  background: #0b2a20;
+}
+
+.logo__text {
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  color: var(--text);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.logo__text b {
+  margin-left: 4px;
+  background: linear-gradient(180deg, var(--gold-2), var(--gold) 60%, var(--gold-3));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.wallet {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 4px 4px 12px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: rgba(3, 18, 13, 0.72);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.wallet__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.wallet strong {
+  font-size: 15px;
+  color: var(--gold-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.wallet__btn {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(242, 194, 91, 0.14);
+  color: var(--gold-2);
+  display: grid;
+  place-items: center;
+  padding: 0;
+}
+
+.wallet__btn svg {
+  width: 17px;
+  height: 17px;
+}
+
+.wallet__btn[aria-pressed="false"] {
+  opacity: 0.45;
+}
+
+/* ── the table (full-bleed scene) ── */
+.stage {
+  position: relative;
+  width: 100%;
+  height: min(calc(min(100vw, 720px) * 0.82 + var(--top-h) + 62px), 60vh);
+  min-height: 340px;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.stage::after { /* only below the play area (--below, set by app.js) */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  height: var(--below, 0px);
+  background: linear-gradient(180deg, rgba(3, 18, 13, 0), var(--bg));
+  pointer-events: none;
+}
+
+.play { /* the play area — left/top/width/height set by app.js */
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  top: var(--top-h);
+  width: 100%;
+  height: calc(100% - var(--top-h));
+  pointer-events: none;
+}
+
+.result {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 6%;
+  text-align: center;
+  transition: opacity 0.25s, transform 0.35s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+
+.result--hidden {
+  opacity: 0;
+  transform: translateY(8px) scale(0.96);
+}
+
+.result__line {
+  font-size: clamp(15px, 4.2vw, 20px);
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gold-2);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+.result__amount {
+  margin-top: 2px;
+  font-size: clamp(32px, 9vw, 54px);
+  font-weight: 900;
+  letter-spacing: -1px;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.35), 0 8px 28px rgba(0, 0, 0, 0.55);
+}
+
+.result--win .result__amount {
+  color: var(--jade);
+  text-shadow: 0 0 24px rgba(35, 227, 154, 0.55), 0 3px 0 rgba(0, 0, 0, 0.35);
+}
+
+.result--lose .result__line {
+  color: #ffb3c0;
+}
+
+.result--lose .result__amount {
+  color: var(--ruby);
+  font-size: clamp(24px, 6.5vw, 38px);
+}
+
+.hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 4%;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+}
+
+/* ── the die (CSS 3D) ── */
+.die-zone {
+  position: absolute;
+  left: 50%;
+  top: 54%;
+  width: var(--die);
+  height: var(--die);
+  transform: translate(-50%, -50%);
+  perspective: calc(var(--die) * 5);
+}
+
+.die-shadow {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--die) * -0.32);
+  width: calc(var(--die) * 1.15);
+  height: calc(var(--die) * 0.28);
+  margin-left: calc(var(--die) * -0.575);
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0));
+  will-change: transform, opacity;
+}
+
+.die-hop {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.die {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  border-radius: 18%;
+  background:
+    radial-gradient(120% 120% at 25% 18%, #ffffff 0%, #f7f3ea 45%, #e6dece 100%);
+  box-shadow:
+    inset 0 0 0 calc(var(--die) * 0.025) rgba(242, 194, 91, 0.9),
+    inset 0 calc(var(--die) * -0.06) calc(var(--die) * 0.12) rgba(120, 90, 30, 0.25);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  padding: 14%;
+  backface-visibility: hidden;
+}
+
+.face i {
+  width: 72%;
+  height: 72%;
+  margin: auto;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #1f6b51, #0a2b20 70%);
+  box-shadow: inset 0 calc(var(--die) * 0.012) calc(var(--die) * 0.02) rgba(0, 0, 0, 0.6);
+}
+
+.face--1 i { /* the one: a big gold pip */
+  width: 92%;
+  height: 92%;
+  background: radial-gradient(circle at 35% 30%, var(--gold-2), var(--gold) 55%, var(--gold-3));
+  box-shadow: 0 0 calc(var(--die) * 0.08) rgba(242, 194, 91, 0.6), inset 0 -2px 3px rgba(0, 0, 0, 0.35);
+}
+
+.p1 { grid-area: 1 / 1; }
+.p3 { grid-area: 1 / 3; }
+.p4 { grid-area: 2 / 1; }
+.p5 { grid-area: 2 / 2; }
+.p6 { grid-area: 2 / 3; }
+.p7 { grid-area: 3 / 1; }
+.p9 { grid-area: 3 / 3; }
+
+/* faces around the cube: 1 front, 6 back, 2 right, 5 left, 3 top, 4 bottom */
+.face--1 { transform: rotateY(0deg) translateZ(calc(var(--die) / 2)); }
+.face--6 { transform: rotateY(180deg) translateZ(calc(var(--die) / 2)); }
+.face--2 { transform: rotateY(90deg) translateZ(calc(var(--die) / 2)); }
+.face--5 { transform: rotateY(-90deg) translateZ(calc(var(--die) / 2)); }
+.face--3 { transform: rotateX(90deg) translateZ(calc(var(--die) / 2)); }
+.face--4 { transform: rotateX(-90deg) translateZ(calc(var(--die) / 2)); }
+
+.die--win .face {
+  box-shadow:
+    inset 0 0 0 calc(var(--die) * 0.035) var(--jade),
+    0 0 calc(var(--die) * 0.25) rgba(35, 227, 154, 0.45);
+}
+
+.die--lose .face {
+  box-shadow:
+    inset 0 0 0 calc(var(--die) * 0.03) var(--ruby),
+    inset 0 calc(var(--die) * -0.06) calc(var(--die) * 0.12) rgba(120, 30, 40, 0.25);
+}
+
+/* ── the six number gems on the table ── */
+.gems {
+  position: absolute;
+  left: 50%;
+  bottom: 13%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: clamp(6px, 2.2vw, 14px);
+}
+
+.gem {
+  width: clamp(30px, 8.5vw, 42px);
+  height: clamp(30px, 8.5vw, 42px);
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  font-size: clamp(14px, 4vw, 18px);
+  color: rgba(243, 255, 249, 0.45);
+  background: rgba(3, 18, 13, 0.55);
+  border: 1.5px solid rgba(156, 199, 181, 0.25);
+  transform: rotate(45deg);
+  transition: background 0.25s, border-color 0.25s, color 0.25s, box-shadow 0.25s, transform 0.25s;
+}
+
+.gem span {
+  transform: rotate(-45deg);
+}
+
+.gem--on {
+  color: #04130e;
+  border-color: var(--gold-2);
+  background: linear-gradient(145deg, var(--gold-2), var(--gold) 60%, var(--gold-3));
+  box-shadow: 0 0 16px rgba(242, 194, 91, 0.55);
+}
+
+.gem--hit {
+  transform: rotate(45deg) scale(1.22);
+  border-color: #fff;
+  box-shadow: 0 0 26px rgba(35, 227, 154, 0.9);
+  background: linear-gradient(145deg, #9effd6, var(--jade));
+  color: #022016;
+}
+
+.gem--miss {
+  transform: rotate(45deg) scale(1.15);
+  border-color: var(--ruby);
+  box-shadow: 0 0 20px rgba(255, 77, 109, 0.7);
+  color: #fff;
+  background: rgba(255, 77, 109, 0.4);
+}
+
+.conn {
+  position: absolute;
+  z-index: 4;
+  top: calc(var(--top-h) + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 77, 109, 0.92);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ── results row (floats over the bottom of the scene) ── */
+.history {
+  position: absolute;
+  z-index: 3;
+  left: 10px;
+  right: 10px;
+  bottom: 14px;
+  border-radius: 999px;
+  padding: 6px;
+  background: rgba(6, 26, 19, 0.82);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.history__track {
+  display: flex;
+  gap: 6px;
+  min-height: 26px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.history__track::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 900;
+  color: #04130e;
+  background: #c9d9d2;
+}
+
+.chip--win {
+  background: linear-gradient(145deg, #9effd6, var(--jade));
+}
+
+.chip--lose {
+  background: linear-gradient(145deg, #ffc1cc, var(--ruby));
+  color: #2a0510;
+}
+
+.history__empty {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 4px 8px;
+}
+
+/* ── bet panel ── */
+.panels {
+  display: flex;
+}
+
+.panel {
+  flex: 1;
+  padding: 10px;
+  border-radius: 26px;
+  background: linear-gradient(180deg, var(--panel), var(--panel-2));
+  border: 1px solid var(--line);
+  box-shadow: inset 0 1px 0 rgba(255, 226, 154, 0.12), 0 10px 26px rgba(0, 0, 0, 0.4);
+}
+
+.panel__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "stepper" "quick" "pick" "odds" "roll" "auto";
+  gap: 12px;
+  padding: 6px 4px;
+}
+
+.stepper {
+  grid-area: stepper;
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  width: min(100%, 280px);
+  padding: 5px;
+  border-radius: 999px;
+  background: #031009;
+  border: 1px solid var(--line);
+}
+
+.amount {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  text-align: center;
+  font-size: 21px;
+  font-weight: 800;
+  color: #fff;
+  outline: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.stepper__btn {
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 50%;
+  background: linear-gradient(145deg, var(--gold-2), var(--gold) 60%, var(--gold-3));
+  color: #062018;
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.quick {
+  grid-area: quick;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.quick button,
+.presets button,
+.seg button {
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(242, 194, 91, 0.06);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pick {
+  grid-area: pick;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.pick__label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  width: min(100%, 360px);
+}
+
+.tile {
+  aspect-ratio: 1;
+  border-radius: 14px;
+  border: 1.5px solid rgba(156, 199, 181, 0.3);
+  background: #031009;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  padding: 18%;
+  transition: transform 0.15s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
+}
+
+.tile i {
+  width: 78%;
+  height: 78%;
+  margin: auto;
+  border-radius: 50%;
+  background: rgba(243, 255, 249, 0.55);
+}
+
+.tile[aria-pressed="true"] {
+  border-color: var(--gold-2);
+  background: linear-gradient(145deg, #fff6dc, #f2d48a 60%, #d9a845);
+  box-shadow: 0 0 14px rgba(242, 194, 91, 0.45);
+}
+
+.tile[aria-pressed="true"] i {
+  background: #0a2b20;
+}
+
+.tile:active {
+  transform: scale(0.94);
+}
+
+.presets {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.presets button {
+  height: 28px;
+  font-size: 12px;
+  padding: 0 10px;
+}
+
+.odds {
+  grid-area: odds;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  padding: 8px;
+  border-radius: 16px;
+  background: rgba(3, 16, 9, 0.6);
+  border: 1px solid rgba(242, 194, 91, 0.16);
+  text-align: center;
+}
+
+.odds span {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.odds strong {
+  font-size: 16px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+#oX {
+  color: var(--gold-2);
+}
+
+#oWin {
+  color: var(--jade);
+}
+
+.roll {
+  grid-area: roll;
+  justify-self: center;
+  width: min(100%, 320px);
+  min-height: 70px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--gold-2), var(--gold) 55%, var(--gold-3));
+  color: #062018;
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  box-shadow: 0 8px 22px rgba(242, 194, 91, 0.35), inset 0 2px 0 rgba(255, 255, 255, 0.5);
+  transition: transform 0.12s, filter 0.2s, box-shadow 0.2s;
+}
+
+.roll:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.roll__label,
+.roll__sub {
+  display: block;
+}
+
+.roll__sub {
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  font-weight: 800;
+  opacity: 0.85;
+  text-transform: none;
+}
+
+.roll:disabled {
+  filter: grayscale(0.55) brightness(0.75);
+  box-shadow: none;
+  cursor: default;
+}
+
+.roll--stop {
+  background: linear-gradient(180deg, #ff8fa3, var(--ruby));
+  color: #fff;
+}
+
+.autoplay {
+  grid-area: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.seg {
+  display: flex;
+  gap: 4px;
+}
+
+.seg button {
+  height: 28px;
+  padding: 0 9px;
+  font-size: 12px;
+}
+
+.seg button[aria-pressed="true"],
+.quick button:active,
+.presets button:active {
+  background: rgba(242, 194, 91, 0.25);
+  border-color: var(--gold);
+  color: var(--gold-2);
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.check input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--gold);
+}
+
+/* ── bets list ── */
+.bets {
+  border-radius: 24px;
+  padding: 10px;
+  background: linear-gradient(180deg, var(--panel), var(--panel-2));
+  border: 1px solid var(--line);
+}
+
+.bets__head {
+  padding: 4px 6px 10px;
+}
+
+.bets__tabs {
+  display: flex;
+  gap: 8px;
+  padding: 4px;
+  border-radius: 999px;
+  background: #031009;
+}
+
+.bets__tab {
+  flex: 1;
+  height: 36px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  font-size: 13px;
+}
+
+.bets__tab--on {
+  background: linear-gradient(180deg, var(--gold-2), var(--gold));
+  color: #062018;
+}
+
+.bets__count {
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.bets__count strong {
+  color: var(--gold-2);
+}
+
+.bets__cols,
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) 40px minmax(0, 1fr);
+  gap: 6px;
+  align-items: center;
+}
+
+.bets__cols {
+  padding: 6px 10px;
+  font-size: 11px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.bets__cols span:not(:first-child),
+.row span:not(:first-child) {
+  text-align: center;
+}
+
+.bets__list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.row {
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(3, 16, 9, 0.55);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.row--win {
+  background: linear-gradient(90deg, rgba(35, 227, 154, 0.18), rgba(3, 16, 9, 0.55));
+}
+
+.row--mine {
+  outline: 1px solid rgba(242, 194, 91, 0.5);
+}
+
+.row__user {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row__die {
+  justify-self: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  font-size: 12px;
+  background: #f7f3ea;
+  color: #0a2b20;
+}
+
+.row__win {
+  font-weight: 800;
+  color: var(--jade);
+}
+
+.row__lose {
+  color: rgba(243, 255, 249, 0.4);
+}
+
+.empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 18px 0 10px;
+  font-size: 13px;
+}
+
+.fair {
+  display: block;
+  width: 100%;
+  margin: 12px 0 0;
+  border: 0;
+  background: none;
+  font-size: 12px;
+  color: var(--muted);
+  text-decoration: underline dotted;
+  text-align: center;
+}
+
+.fair__detail {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 4px 6px 0;
+}
+
+.fair__detail p {
+  margin: 10px 0 4px;
+}
+
+.fair__detail code,
+.fair__seed {
+  display: block;
+  width: 100%;
+  word-break: break-all;
+  font: 11px ui-monospace, Menlo, monospace;
+  background: #031009;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(242, 194, 91, 0.12);
+  color: #e8fff5;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.fair__note {
+  opacity: 0.8;
+}
+
+/* ── toast ── */
+.toast {
+  position: fixed;
+  left: 50%;
+  top: calc(64px + env(safe-area-inset-top, 0px));
+  transform: translateX(-50%);
+  z-index: 20;
+  max-width: calc(100% - 32px);
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: #2a0a12;
+  border: 1.5px solid var(--ruby);
+  font-weight: 700;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+/* ── wide screens: the scene behind everything; bets list left, bet panel bottom ── */
+@media (min-width: 900px) {
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .game {
+    max-width: none;
+    width: 100%;
+    height: 100vh;
+    padding: 0;
+    display: grid;
+    position: relative;
+    overflow: hidden;
+    grid-template-columns: minmax(280px, 24%) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto auto; /* play area · results · bet panel */
+    gap: 0 14px;
+  }
+
+  .sticky {
+    display: contents;
+  }
+
+  .sticky::after {
+    display: none;
+  }
+
+  .stage {
+    grid-column: 1 / 3;
+    grid-row: 1 / 4;
+    height: 100vh;
+    min-height: 0;
+  }
+
+  .top {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .stage::after { /* below the play area the table melts away behind the results and panel */
+    background: linear-gradient(180deg, rgba(3, 18, 13, 0) 0, rgba(3, 18, 13, 0.75) 60px, var(--bg) 100px);
+  }
+
+  .stage__edges { /* behind the bets list (left of the play area) */
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    width: calc(var(--left, 0px) + 40px);
+    pointer-events: none;
+    background: linear-gradient(90deg, var(--bg) 0, var(--bg) calc(100% - 140px), rgba(3, 18, 13, 0.7) calc(100% - 60px), rgba(3, 18, 13, 0) 100%);
+  }
+
+  .history {
+    grid-column: 2;
+    grid-row: 2;
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    margin: 0 12px 10px 24px;
+    min-width: 0;
+  }
+
+  .bets {
+    grid-column: 1;
+    grid-row: 1 / 4;
+    position: relative;
+    z-index: 3;
+    min-height: 0;
+    min-width: 0;
+    margin: 12px 0 12px 12px;
+    overflow-y: auto;
+  }
+
+  .panels {
+    grid-column: 2;
+    grid-row: 3;
+    position: relative;
+    z-index: 3;
+    min-width: 0;
+    margin: 0 12px 12px 24px;
+  }
+
+  .panel__inner {
+    grid-template-columns: minmax(0, auto) minmax(0, 1fr) minmax(0, auto);
+    grid-template-areas:
+      "stepper pick roll"
+      "quick   pick roll"
+      "auto    odds roll";
+    align-items: center;
+    gap: 10px 18px;
+    padding: 4px 8px;
+  }
+
+  .stepper {
+    width: clamp(170px, 16vw, 250px);
+  }
+
+  .quick {
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+
+  .quick button {
+    padding: 0 clamp(6px, 0.7vw, 12px);
+  }
+
+  .tiles {
+    width: min(100%, 330px);
+  }
+
+  .roll {
+    width: clamp(150px, 15vw, 230px);
+    min-height: 116px;
+    border-radius: 26px;
+    align-self: stretch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .result,
+  .gem,
+  .tile,
+  .roll {
+    transition: none;
+  }
+}

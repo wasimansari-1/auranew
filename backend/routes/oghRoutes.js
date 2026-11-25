@@ -12,7 +12,12 @@ function extractToken(req) {
   return req.headers["x-player-token"] || req.query?.token || req.body?.token || null;
 }
 
-// 1. Games Catalog: GET /ogh/games
+// 1. Status Check: GET /ogh/status and GET /status
+router.get("/status", (req, res) => {
+  return res.json({ status: true, ok: true, active: true, uptime: process.uptime() });
+});
+
+// 2. Games Catalog: GET /ogh/games
 router.get("/games", (req, res) => {
   return res.json({
     status: true,

@@ -1,0 +1,887 @@
+:root {
+  --bg: #2a1442;
+  --bg-2: #3a1c5c;
+  --panel: #4a2470;
+  --panel-2: #311654;
+  --accent: #ff6fae;
+  --accent-2: #ffd0e6;
+  --chip: #ff4f6d;
+  --text: #fff6fb;
+  --muted: #e3c9f2;
+  --green: #24c98a;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.3 "Trebuchet MS", system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Segoe UI Symbol", sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+body {
+  background: radial-gradient(120% 60% at 50% 100%, var(--bg-2), var(--bg) 70%) fixed, var(--bg);
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+.game {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 10px calc(16px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* ── sticky game screen ── */
+.sticky {
+  --top-h: calc(58px + env(safe-area-inset-top, 0px));
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  margin: 0 -10px;
+  padding: 0 0 8px;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.sticky::after { /* soft edge where the fixed screen meets the page below */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -18px;
+  height: 18px;
+  background: linear-gradient(180deg, var(--bg), transparent);
+  pointer-events: none;
+}
+
+/* the top bar floats over the scene's sky */
+.top {
+  position: absolute;
+  z-index: 4;
+  top: calc(8px + env(safe-area-inset-top, 0px));
+  left: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.round-btn {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid var(--accent);
+  background: var(--panel-2);
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+}
+
+.round-btn svg {
+  width: 20px;
+  height: 20px;
+}
+
+.logo {
+  margin-right: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45));
+}
+
+.logo__icon {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+}
+
+.logo__text {
+  font-size: clamp(18px, 5.4vw, 26px);
+  font-weight: 900;
+  font-style: italic;
+  letter-spacing: -0.5px;
+  color: #ffd23f;
+  white-space: nowrap;
+  -webkit-text-stroke: 1px rgba(0, 0, 0, 0.25);
+}
+
+.logo__text b {
+  color: #3ec7ff;
+  margin-left: 3px;
+}
+
+.wallet {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 5px 6px 5px 12px;
+  border-radius: 999px;
+  border: 2px solid var(--accent);
+  background: linear-gradient(180deg, var(--panel), var(--panel-2));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.wallet__label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.wallet strong {
+  font-size: 15px;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+
+.wallet__sound {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+}
+
+.wallet__sound svg {
+  width: 18px;
+  height: 18px;
+}
+
+.wallet__sound[aria-pressed="false"] {
+  opacity: 0.5;
+}
+
+/* ── stage: full-bleed scene, up under the top bar and down behind the results row ── */
+.stage {
+  position: relative;
+  width: 100%;
+  height: min(calc(min(100vw, 720px) * 9 / 11 + var(--top-h) + 62px), 60vh);
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.stage::after { /* only below the play area (--below, set by ui.js): the game stays clear */
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  height: var(--below, 0px);
+  background: linear-gradient(180deg, transparent, var(--bg));
+  pointer-events: none;
+}
+
+.stage canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.stage__center { /* placed on the play area by ui.js (left/top/width/height) */
+  position: absolute;
+  z-index: 2;
+  left: 0;
+  top: var(--top-h);
+  width: 100%;
+  height: calc(100% - var(--top-h));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 26%;
+  pointer-events: none;
+  text-align: center;
+}
+
+.mult {
+  font-size: clamp(40px, 13vw, 76px);
+  font-weight: 900;
+  letter-spacing: -1px;
+  color: #fff;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.35), 0 6px 22px rgba(0, 0, 0, 0.45);
+  font-variant-numeric: tabular-nums;
+}
+
+.mult--crashed {
+  color: #ff5a5a;
+}
+
+.mult--won {
+  color: #7dffa8;
+}
+
+.flew {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.hint {
+  font-size: 15px;
+  font-weight: 800;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+}
+
+.conn {
+  position: absolute;
+  z-index: 3;
+  top: calc(var(--top-h) + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(200, 40, 40, 0.92);
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ── my results (floats over the bottom of the scene) ── */
+.history {
+  position: absolute;
+  z-index: 3;
+  left: 10px;
+  right: 10px;
+  bottom: 14px;
+  border-radius: 999px;
+  padding: 6px;
+  background: linear-gradient(180deg, var(--panel), var(--panel-2));
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  overflow: hidden;
+}
+
+.history__track {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.history__track::-webkit-scrollbar {
+  display: none;
+}
+
+.chip {
+  flex-shrink: 0;
+  min-width: 52px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+  background: linear-gradient(180deg, #3ad17a, #1f9a55);
+  color: #fff;
+}
+
+.chip--bust {
+  background: linear-gradient(180deg, #ff6b6b, var(--chip));
+}
+
+.chip--big {
+  background: linear-gradient(180deg, var(--accent-2), var(--accent));
+  color: #3a1d00;
+}
+
+.chip--empty {
+  background: transparent;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* ── the kite-string console (Kite Flyer's own bet area) ── */
+.console {
+  position: relative;
+  overflow: hidden;
+  padding: 30px 14px 16px;
+  border-radius: 26px;
+  border: 2px solid #ff6fae;
+  background:
+    radial-gradient(ellipse 70% 40% at 50% 0, rgba(255, 210, 63, 0.18), transparent 70%),
+    linear-gradient(180deg, #5a2e86, #2f1652);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.15), 0 10px 24px rgba(0, 0, 0, 0.4);
+}
+
+.console__bunting { /* festival bunting along the top edge */
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 18px;
+  background:
+    conic-gradient(from 135deg at 50% 0, #ff4f9a 0 90deg, transparent 0) 0 0 / 72px 18px repeat-x,
+    conic-gradient(from 135deg at 50% 0, #ffd23f 0 90deg, transparent 0) 24px 0 / 72px 18px repeat-x,
+    conic-gradient(from 135deg at 50% 0, #3ec7ff 0 90deg, transparent 0) 48px 0 / 72px 18px repeat-x;
+  pointer-events: none;
+}
+
+.console__main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.reel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.reel__spool { /* the string reel: wound string around a wooden hub */
+  width: 132px;
+  height: 132px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 7px solid #8a5a2a;
+  background: repeating-conic-gradient(#f4e1c8 0 5deg, #d9b98f 5deg 10deg);
+  box-shadow: inset 0 0 0 3px #5a3416, 0 6px 0 #3a1d08, 0 10px 18px rgba(0, 0, 0, 0.35);
+  display: grid;
+  place-items: center;
+}
+
+.console:has(.action--cashout) .reel__spool { /* the string unwinds while the kite flies */
+  animation: reel-spin 1.4s linear infinite;
+}
+
+.console:has(.action--cashout) .reel__hub {
+  animation: reel-spin 1.4s linear infinite reverse; /* the numbers stay upright */
+}
+
+@keyframes reel-spin {
+  to { transform: rotate(360deg); }
+}
+
+.reel__hub {
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 35%, #4a2470, #2a1442);
+  border: 3px solid #ffd23f;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.reel__label {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #ffd23f;
+}
+
+.reel__hub input {
+  width: 80px;
+  border: 0;
+  background: transparent;
+  text-align: center;
+  font-size: 19px;
+  font-weight: 900;
+  color: #fff;
+  outline: none;
+}
+
+.reel__wind { /* − / +: wind the reel out / in */
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border: 2px dashed #ffd0e6;
+  border-radius: 50%;
+  background: #ff6fae;
+  color: #fff;
+  font-size: 22px;
+  font-weight: 900;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #b0245a;
+}
+
+.reel__wind:active span {
+  display: inline-block;
+  transform: rotate(-90deg);
+}
+
+.handle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.handle__string {
+  width: 0;
+  height: 22px;
+  border-left: 2px dashed rgba(255, 255, 255, 0.8);
+}
+
+.action { /* Bet / Cash Out: the pull-the-string handle */
+  position: relative;
+  width: 132px;
+  min-height: 96px;
+  margin-top: 8px;
+  border: 0;
+  border-radius: 16px 16px 46px 46px;
+  background: linear-gradient(180deg, #ff8fc0, #ff3d7f);
+  color: #fff;
+  font-size: 19px;
+  font-weight: 900;
+  line-height: 1.05;
+  cursor: pointer;
+  box-shadow: 0 7px 0 #b0245a, 0 12px 22px rgba(0, 0, 0, 0.35);
+  transition: transform 0.1s;
+}
+
+.action::before { /* the T-grip of the handle */
+  content: "";
+  position: absolute;
+  top: -12px;
+  left: 14%;
+  width: 72%;
+  height: 14px;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #ffe680, #ffb12e);
+  box-shadow: 0 2px 0 #a86f00;
+}
+
+.action small {
+  display: block;
+  margin-top: 4px;
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.action:active {
+  transform: translateY(8px); /* pull! */
+}
+
+.action--cashout { /* while it flies: reel it in */
+  background: linear-gradient(180deg, #6af0b0, #1fb878);
+  box-shadow: 0 7px 0 #127a50, 0 12px 22px rgba(0, 0, 0, 0.35);
+}
+
+.action--waiting,
+.action:disabled {
+  background: linear-gradient(180deg, #9a8aaa, #6f5f80);
+  box-shadow: 0 5px 0 #4b3e5a;
+  cursor: default;
+}
+
+.action--waiting small {
+  font-size: 13px;
+}
+
+.tails { /* quick amounts: kite tails in festival colours */
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.tails button {
+  min-width: 70px;
+  height: 42px;
+  padding: 0 16px;
+  border: 0;
+  clip-path: polygon(0 0, 100% 0, 88% 50%, 100% 100%, 0 100%, 12% 50%);
+  color: #2a1442;
+  font-weight: 900;
+  cursor: pointer;
+  background: #ffd23f;
+}
+
+.tails button:nth-child(4n + 2) { background: #3ec7ff; }
+.tails button:nth-child(4n + 3) { background: #ff8fc0; }
+.tails button:nth-child(4n + 4) { background: #9a7cff; color: #fff; }
+
+.tails button:active {
+  transform: rotate(-4deg) scale(1.05);
+}
+
+.tape { /* auto cash-out: the string length, on a measuring tape */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  margin-top: 14px;
+  padding: 8px 14px 14px;
+  border-radius: 12px;
+  font-weight: 800;
+  background:
+    repeating-linear-gradient(90deg, #ffd23f 0 2px, transparent 2px 10px) left bottom / 100% 7px no-repeat,
+    rgba(0, 0, 0, 0.22);
+}
+
+.knot-switch {
+  position: relative;
+  display: inline-flex;
+  padding: 4px 0; /* 40 px tall to tap */
+  cursor: pointer;
+}
+
+.knot-switch input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.knot-switch__track {
+  width: 58px;
+  height: 32px;
+  border-radius: 999px;
+  border: 2px solid #ffd0e6;
+  background: #2a1442;
+  padding: 3px;
+  display: flex;
+  transition: background 0.2s;
+}
+
+.knot-switch__knob { /* a little bow knot */
+  width: 22px;
+  height: 22px;
+  background: #ff6fae;
+  clip-path: polygon(0 10%, 50% 40%, 100% 10%, 100% 90%, 50% 60%, 0 90%);
+  transition: transform 0.2s;
+}
+
+.knot-switch input:checked + .knot-switch__track {
+  background: #ff6fae;
+}
+
+.knot-switch input:checked + .knot-switch__track .knot-switch__knob {
+  transform: translateX(26px);
+  background: #fff;
+}
+
+.knot-switch input:focus-visible + .knot-switch__track {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+.tape__x {
+  width: 72px;
+  height: 40px;
+  border-radius: 10px;
+  border: 2px solid #ffd23f;
+  background: rgba(0, 0, 0, 0.25);
+  text-align: center;
+  font-weight: 900;
+  outline: none;
+}
+
+@media (min-width: 900px) {
+  .console {
+    display: grid;
+    grid-template-columns: auto auto;
+    grid-template-areas: "main tails" "tape tape";
+    align-items: center;
+    justify-content: center;
+    gap: 8px 28px;
+    padding: 28px 22px 16px;
+  }
+
+  .console__main { grid-area: main; }
+  .tails { grid-area: tails; margin-top: 0; flex-wrap: nowrap; }
+  .tape { grid-area: tape; justify-self: center; margin-top: 4px; flex-wrap: nowrap; white-space: nowrap; }
+}
+
+/* ── rounds list ── */
+.bets {
+  border-radius: 28px;
+  padding: 10px;
+  background: linear-gradient(180deg, var(--panel), var(--panel-2));
+}
+
+.bets__head {
+  border-radius: 22px;
+  padding: 12px 14px;
+  background: linear-gradient(180deg, #ffd23f, #ffab2e);
+  color: #3a1600;
+}
+
+.bets__tabs {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.bets__tab {
+  min-width: 120px;
+  height: 36px;
+  border: 0;
+  border-radius: 999px;
+  background: #5b2f86;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.bets__tab--on {
+  background: #2a1442;
+  color: #fff;
+}
+
+.bets__count {
+  margin-top: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.bets__cols,
+.row {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 0.8fr 1fr;
+  gap: 6px;
+  align-items: center;
+}
+
+.bets__cols {
+  margin: 10px 0 6px;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 14px;
+}
+
+.bets__cols span:not(:first-child),
+.row span:not(:first-child) {
+  text-align: center;
+}
+
+.bets__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.row {
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #5a2e86, #47236c);
+  font-size: 14px;
+}
+
+.row--cashed {
+  background: linear-gradient(180deg, #2fa865, #217f4c);
+}
+
+.row--bust {
+  opacity: 0.75;
+}
+
+.row--mine {
+  outline: 2px solid var(--accent-2);
+}
+
+.row__user {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row__x {
+  font-weight: 800;
+  color: var(--accent-2);
+}
+
+.row__win {
+  font-weight: 800;
+}
+
+.empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 18px 0 10px;
+}
+
+.fair {
+  margin: 12px 4px 0;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  text-decoration: underline dotted;
+  cursor: pointer;
+}
+
+.fair__detail {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 4px 6px 0;
+}
+
+.fair__detail p {
+  margin: 10px 0 4px;
+}
+
+.fair__detail code {
+  display: block;
+  word-break: break-all;
+  font: 11px ui-monospace, Menlo, monospace;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: #fff;
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.fair__detail a {
+  color: var(--accent-2);
+}
+
+/* ── wide screens: the scene fills the screen; the list (left), results and panel float over it ── */
+@media (min-width: 900px) {
+  html,
+  body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .game {
+    max-width: none;
+    height: 100vh;
+    padding: 0;
+    display: grid;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    grid-template-columns: minmax(280px, 24%) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto auto;
+    gap: 0 14px;
+  }
+
+  .sticky,
+  .panels,
+  .bets {
+    min-width: 0;
+  }
+
+  .sticky::after {
+    display: none;
+  }
+
+  .sticky {
+    display: contents;
+  }
+
+  .stage {
+    grid-column: 1 / 3;
+    grid-row: 1 / 4;
+    height: 100vh;
+  }
+
+  .top {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .stage::after {
+    background: linear-gradient(180deg, transparent 0, var(--bg) 100px);
+  }
+
+  .stage__edges { /* behind the list (left of the play area, --left from ui.js) the scene melts away */
+    position: absolute;
+    inset: 0;
+    right: auto;
+    z-index: 1;
+    width: calc(var(--left, 0px) + 40px);
+    pointer-events: none;
+    background: linear-gradient(90deg, var(--bg) 0, var(--bg) calc(100% - 140px), transparent 100%);
+  }
+
+  .history {
+    grid-column: 2;
+    grid-row: 2;
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    margin: 0 12px 10px 24px;
+  }
+
+  .bets {
+    grid-column: 1;
+    grid-row: 1 / 4;
+    position: relative;
+    z-index: 3;
+    min-height: 0;
+    margin: 12px 0 12px 12px;
+    overflow-y: auto;
+  }
+
+  .panels {
+    grid-column: 2;
+    grid-row: 3;
+    position: relative;
+    z-index: 3;
+    margin: 0 12px 12px 24px;
+    align-self: start;
+    justify-self: center;
+    width: min(100%, 780px);
+  }
+}
+
+/* ── toast ── */
+.toast {
+  position: fixed;
+  left: 50%;
+  top: calc(60px + env(safe-area-inset-top, 0px));
+  transform: translateX(-50%);
+  z-index: 20;
+  max-width: calc(100% - 32px);
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: var(--panel-2);
+  border: 2px solid var(--accent);
+  font-weight: 700;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.toast--win {
+  background: linear-gradient(180deg, #2fbf5f, #158a3c);
+  border-color: #b9f5c9;
+}
+
+.toast--error {
+  background: linear-gradient(180deg, #d1361a, #9a1c08);
+  border-color: #ffb3a3;
+}

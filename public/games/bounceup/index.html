@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en" style="color-scheme: dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0c3b4a">
+  <title>Bounce Up — NEXO RNG</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game">
+    <!-- Stays at the top while the bet panel and the list scroll under it. -->
+    <div class="sticky">
+      <header class="top">
+        <button type="button" class="round-btn" id="back" aria-label="Back">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="logo" aria-label="Bounce Up"><svg viewBox="0 0 34 34" aria-hidden="true" class="logo__icon"><ellipse cx="17" cy="24" rx="15" ry="7" fill="#2fbf5a"/><path d="M17 24 L30 19 A15 7 0 0 1 32 24 Z" fill="#0c3b4a"/><circle cx="11" cy="10" r="5" fill="#7be36a"/><circle cx="23" cy="10" r="5" fill="#7be36a"/><circle cx="11" cy="10" r="2.4" fill="#fff"/><circle cx="23" cy="10" r="2.4" fill="#fff"/><circle cx="11.6" cy="10.4" r="1.2" fill="#122"/><circle cx="23.6" cy="10.4" r="1.2" fill="#122"/></svg><span class="logo__text">Bounce<b>Up</b></span></div>
+        <div class="wallet">
+          <span class="wallet__label" id="mode">Balance</span>
+          <strong id="balance">—</strong>
+          <button type="button" class="wallet__sound" id="music" aria-label="Music on" aria-pressed="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.5V6.2l10-2.2v11.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.6" fill="currentColor"/><circle cx="16.5" cy="15.3" r="2.6" fill="currentColor"/></svg>
+          </button>
+          <button type="button" class="wallet__sound" id="sound" aria-label="Sound on" aria-pressed="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <section class="stage" aria-label="Bounce Up">
+        <canvas id="scene" aria-hidden="true"></canvas>
+        <div class="stage__edges" aria-hidden="true"></div>
+        <div class="stage__center">
+          <div class="flew" id="flew" hidden></div>
+          <div class="mult" id="mult"></div>
+          <div class="hint" id="hint"></div>
+        </div>
+        <div class="conn" id="conn" hidden>Reconnecting…</div>
+      </section>
+
+      <div class="history" aria-label="My last results"><div class="history__track" id="history"></div></div>
+    </div>
+
+    <!-- The betting pond: the amount floats on a lily pad, quick amounts are hopping pebbles,
+         Bet is the big frog, auto cash-out is the jump-height flag. -->
+    <div class="panels">
+      <section class="pond" aria-label="Your bet">
+        <div class="pond__deco" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="pond__row">
+          <div class="pad-amount">
+            <button type="button" class="stone" id="minus" aria-label="Decrease bet">−</button>
+            <div class="pad-amount__pad"><span class="pad-amount__label">Your bet</span><input id="amount" inputmode="decimal" value="1.00" aria-label="Bet amount"></div>
+            <button type="button" class="stone" id="plus" aria-label="Increase bet">+</button>
+          </div>
+          <button type="button" class="action" id="action"><span id="actionLabel">Bet</span><small id="actionSub"></small></button>
+        </div>
+        <div class="pebbles quick" id="quick" aria-label="Quick amounts"></div>
+        <div class="jump-height">
+          <span class="jump-height__flag" aria-hidden="true"></span>
+          <span class="jump-height__text">Auto cash out at</span>
+          <label class="lily-switch">
+            <input type="checkbox" id="autoOn" aria-label="Auto cash out">
+            <span class="lily-switch__track"><span class="lily-switch__knob"></span></span>
+          </label>
+          <input class="jump-height__x" id="autoAt" inputmode="decimal" value="2.00" aria-label="Auto cash-out multiplier"><b>x</b>
+        </div>
+      </section>
+    </div>
+
+    <section class="bets">
+      <div class="bets__head">
+        <div class="bets__tabs" role="tablist">
+          <button type="button" role="tab" class="bets__tab bets__tab--on" data-tab="all" aria-selected="true">All rounds</button>
+          <button type="button" role="tab" class="bets__tab" data-tab="mine" aria-selected="false">My rounds</button>
+        </div>
+        <div class="bets__count"><span id="countLabel">Recent rounds</span> <strong id="betCount">0</strong></div>
+      </div>
+      <div class="bets__cols"><span>Player</span><span>Bet</span><span>X</span><span>Win</span></div>
+      <div class="bets__list" id="list"></div>
+      <p class="fair" id="fair">Provably fair — how it works</p>
+      <div class="fair__detail" id="fairDetail" hidden>
+        <p>Your round's hash (given when it starts)</p>
+        <code id="fHash">—</code>
+        <p>Seed (revealed when it ends)</p>
+        <code id="fSeed">—</code>
+        <p>Check: SHA-256(seed) = hash.</p>
+      </div>
+    </section>
+
+    <div class="toast" id="toast" role="status" hidden></div>
+  </main>
+  <script src="../_core/sound-unlock.js"></script>
+  <script src="../_core/socket-auth.js"></script>
+  <script src="../_core/secure-socket.js"></script>
+  <script src="/nexorng-config.js"></script>
+  <script src="../_core/phrases.js"></script>
+  <script src="../_core/solo-client.js"></script>
+  <script src="scene.js"></script>
+  <script src="ui.js"></script>
+  <script src="../_core/fit-screen.js"></script>
+  <script src="../_core/fair.js"></script>
+</body>
+</html>

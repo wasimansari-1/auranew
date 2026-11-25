@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en" style="color-scheme: dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f0724">
+  <title>Keno Vortex — NEXO RNG</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game" id="game">
+    <!-- Phone: the machine stays at the top while the ticket and the lists scroll under it. -->
+    <div class="sticky" id="sticky">
+      <header class="top" id="top">
+        <button type="button" class="round-btn" id="back" aria-label="Back">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="brand" role="img" aria-label="Keno Vortex">
+          <svg class="brand__mark" viewBox="-50 -50 100 100" aria-hidden="true">
+            <defs>
+              <radialGradient id="kvBall" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#fff6d8"/><stop offset=".4" stop-color="#ffcf6b"/><stop offset="1" stop-color="#c46f0c"/></radialGradient>
+            </defs>
+            <path d="M-44 6 A44 21 -18 0 1 36 -29" fill="none" stroke="#c084fc" stroke-width="5" stroke-linecap="round"/>
+            <circle r="27" fill="url(#kvBall)"/>
+            <circle r="15" fill="#fbf8ff" stroke="#6d28d9" stroke-width="2.4"/>
+            <text y="6.5" text-anchor="middle" font-family="Outfit, system-ui, sans-serif" font-weight="900" font-size="17" fill="#1a0b36">40</text>
+            <path d="M-33 32 A44 21 -18 0 0 14 20" fill="none" stroke="#c084fc" stroke-width="5" stroke-linecap="round"/>
+          </svg>
+          <span class="brand__text"><b>KENO VORTEX</b><small>10 BALLS · 1 – 40</small></span>
+        </div>
+        <div class="wallet">
+          <span class="wallet__label" id="mode">Balance</span>
+          <strong id="balance">—</strong>
+          <button type="button" class="wallet__sound" id="music" aria-label="Music" aria-pressed="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.5V6.2l10-2.2v11.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.6" fill="currentColor"/><circle cx="16.5" cy="15.3" r="2.6" fill="currentColor"/></svg>
+          </button>
+          <button type="button" class="wallet__sound" id="sound" aria-label="Sound" aria-pressed="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <section class="stage" id="stage" aria-label="Keno Vortex ball machine">
+        <canvas id="scene" aria-hidden="true"></canvas>
+        <div class="stage__edges" aria-hidden="true"></div>
+        <!-- placed on the play area by app.js -->
+        <div class="play" id="play">
+          <div class="timer" id="timer" hidden>
+            <svg viewBox="0 0 100 100" aria-hidden="true">
+              <defs><linearGradient id="kvRing" x1="0" x2="1"><stop offset="0" stop-color="#ffcf6b"/><stop offset="1" stop-color="#a855f7"/></linearGradient></defs>
+              <circle cx="50" cy="50" r="44" class="timer__bg"/>
+              <circle cx="50" cy="50" r="44" class="timer__ring" id="timerRing" pathLength="100"/>
+            </svg>
+            <strong id="timerNum">15</strong><small>BETS CLOSE</small>
+          </div>
+          <div class="pill" id="status" role="status"></div>
+          <div class="pill pill--draw" id="drawpill" hidden><span>BALL</span><b id="ballNo">1 / 10</b><em id="hitNo" hidden></em></div>
+          <div class="banner" id="banner" hidden>
+            <small id="bannerTitle">YOU WIN</small>
+            <b id="bannerWin"></b>
+            <span class="banner__lines" id="bannerLines"></span>
+          </div>
+        </div>
+        <div class="conn" id="conn" hidden>Reconnecting…</div>
+      </section>
+
+      <div class="history" id="historyBox" aria-label="Last draw">
+        <div class="history__label"><span id="histLabel">LAST DRAW</span><b id="histRound">—</b></div>
+        <div class="history__balls" id="history"></div>
+        <button type="button" class="history__more" id="histMore" aria-label="Draw history">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- the tickets: one on a phone, two side by side on a wide screen (built by app.js) -->
+    <div class="tablewrap" id="tablewrap"></div>
+
+    <aside class="side" id="side">
+      <section class="bets">
+        <div class="bets__tabs" role="tablist">
+          <button type="button" role="tab" class="bets__tab bets__tab--on" data-tab="all" aria-selected="true">Live bets</button>
+          <button type="button" role="tab" class="bets__tab" data-tab="mine" aria-selected="false">My bets</button>
+          <button type="button" role="tab" class="bets__tab" data-tab="stats" aria-selected="false">Hot &amp; cold</button>
+        </div>
+        <div class="bets__count"><span id="countLabel">Bets this round</span> <strong id="betCount">0</strong></div>
+        <div class="bets__cols" id="cols"></div>
+        <div class="bets__list" id="list"></div>
+      </section>
+
+      <div class="links">
+        <button type="button" class="link" id="rulesBtn">Rules &amp; pays</button>
+        <button type="button" class="link" id="fair">Provably fair · round <span id="fRound">—</span></button>
+      </div>
+      <div class="fair__detail" id="fairDetail" hidden>
+        <p>Draw hash (published when betting opens)</p>
+        <code id="fHash">—</code>
+        <p>Server seed (revealed after the round)</p>
+        <code id="fSeed">—</code>
+        <p>Check: SHA-256(seed) = hash. The 10 balls come from HMAC-SHA256(seed, "<span id="fGame">88.0094</span>:round:0", :1 …) read as unbiased numbers: ball 1 is number 1 + the first draw from 40, ball 2 the next from the 39 left, and so on.</p>
+        <button type="button" class="link" id="fCheckBtn">Recompute the last draw from its seed</button>
+        <p id="fCheck" hidden></p>
+      </div>
+    </aside>
+
+    <div class="modal" id="rules" role="dialog" aria-modal="true" aria-labelledby="rulesTitle" hidden>
+      <div class="modal__card">
+        <button type="button" class="modal__close" id="rulesClose" aria-label="Close">×</button>
+        <h2 id="rulesTitle">Keno Vortex — rules &amp; pays</h2>
+        <p>Every 30 seconds the machine blows <b>10 balls out of 40</b> — the same draw for every player, every number equally likely.</p>
+        <p><b>Play</b>: pick 1 to 10 numbers on a ticket (or tap <b>Quick pick</b>), choose your stake and press <b>Bet</b>. Bets are open for 15 seconds; then the 10 balls fly up the tube one by one (10 s) and the result shows for 5 s. On a wide screen you can play two tickets per draw — they go in together.</p>
+        <p><b>Pays</b> depend on how many numbers you picked and how many of them are drawn (stake included, e.g. ×45 on €1 returns €45):</p>
+        <div class="paytable" id="payTable"></div>
+        <p>Return to player (RTP) per ticket size: 1 pick 96.25% · 2: 96.15% · 3: 95.65% · 4: 96.18% · 5: 96.07% · 6: 96.51% · 7: 96.45% · 8: 96.50% · 9: 95.77% · 10: 96.55%.</p>
+        <p>Bet limits for one draw (all your tickets together): <b id="rMin">€0.10</b> to <b id="rMax">€100</b>. Maximum win per draw: <b id="rMaxWin">€50,000</b>.</p>
+        <p class="muted">Malfunction voids all pays and plays.</p>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" hidden></div>
+  </main>
+  <script src="../_core/sound-unlock.js"></script>
+  <script src="../_core/socket-auth.js"></script>
+  <script src="../_core/secure-socket.js"></script>
+  <script src="/nexorng-config.js"></script>
+  <script src="../_core/table-client.js"></script>
+  <script src="rules.js"></script>
+  <script src="../_core/players.js"></script>
+  <script src="audio.js"></script>
+  <script type="module" src="app.js"></script>
+  <script src="../_core/fit-screen.js"></script>
+  <script src="../_core/fair.js"></script>
+</body>
+</html>

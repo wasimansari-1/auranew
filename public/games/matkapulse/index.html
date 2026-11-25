@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en" style="color-scheme: dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0620">
+  <title>Matka Pulse — NEXO RNG</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game" id="game">
+    <!-- Phone: the pots stay at the top while the board and the lists scroll under it. -->
+    <div class="sticky" id="sticky">
+      <header class="top" id="top">
+        <button type="button" class="round-btn" id="back" aria-label="Back">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <svg class="brand" viewBox="0 0 200 52" role="img" aria-label="Matka Pulse">
+          <defs>
+            <linearGradient id="mpGold" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff3d2"/><stop offset=".5" stop-color="#ffcf6b"/><stop offset=".56" stop-color="#d48d2c"/><stop offset="1" stop-color="#ffe09a"/></linearGradient>
+            <linearGradient id="mpPur" x1="0" x2="1"><stop offset="0" stop-color="#c084fc"/><stop offset="1" stop-color="#7c3aed"/></linearGradient>
+            <radialGradient id="mpBallP" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#e9d5ff"/><stop offset=".5" stop-color="#a855f7"/><stop offset="1" stop-color="#4c1d95"/></radialGradient>
+            <radialGradient id="mpBallG" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff3d2"/><stop offset=".5" stop-color="#ffbb60"/><stop offset="1" stop-color="#9a5d10"/></radialGradient>
+          </defs>
+          <g transform="translate(4 4)">
+            <path d="M14 4h16l-2 5c7 3 12 10 12 18 0 11-8 19-18 19S4 38 4 27c0-8 5-15 12-18z" fill="none" stroke="url(#mpGold)" stroke-width="2.6" stroke-linejoin="round"/>
+            <circle cx="15" cy="30" r="5.2" fill="url(#mpBallP)"/><circle cx="27" cy="31" r="5.2" fill="url(#mpBallG)"/><circle cx="21" cy="21" r="5.2" fill="url(#mpBallP)"/>
+          </g>
+          <text x="52" y="30" font-family="Outfit, system-ui, sans-serif" font-weight="900" font-size="26" letter-spacing="1.5" fill="url(#mpGold)">MATKA</text>
+          <text x="53" y="45" font-family="Outfit, system-ui, sans-serif" font-weight="800" font-size="11.5" letter-spacing="8.6" fill="url(#mpPur)">PULSE·30</text>
+        </svg>
+        <div class="wallet">
+          <span class="wallet__label" id="mode">Balance</span>
+          <strong id="balance">—</strong>
+          <button type="button" class="wallet__sound" id="music" aria-label="Music" aria-pressed="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.5V6.2l10-2.2v11.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.6" fill="currentColor"/><circle cx="16.5" cy="15.3" r="2.6" fill="currentColor"/></svg>
+          </button>
+          <button type="button" class="wallet__sound" id="sound" aria-label="Sound" aria-pressed="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <section class="stage" id="stage" aria-label="Matka Pulse pots">
+        <canvas id="scene" aria-hidden="true"></canvas>
+        <div class="stage__edges" aria-hidden="true"></div>
+        <!-- placed on the play area by app.js -->
+        <div class="play" id="play">
+          <div class="status" id="status" role="status"></div>
+          <div class="timer" id="timer" hidden>
+            <svg viewBox="0 0 100 100" aria-hidden="true">
+              <circle cx="50" cy="50" r="43" class="timer__bg"/>
+              <circle cx="50" cy="50" r="43" class="timer__ring" id="timerRing" pathLength="100"/>
+            </svg>
+            <strong id="timerNum">15</strong><small>BETS</small>
+          </div>
+          <div class="drawchip" id="drawchip" hidden><i class="drawchip__live"></i><span id="drawLabel">OPEN</span><span class="drawchip__dots"><i>–</i><i>–</i><i>–</i></span></div>
+          <div class="result" id="result" hidden>
+            <div class="result__seg"><small>OPEN</small><b id="rOpen">—</b></div>
+            <i class="result__bar"></i>
+            <div class="result__seg result__seg--j"><small>JODI</small><b id="rJodi">—</b></div>
+            <i class="result__bar"></i>
+            <div class="result__seg"><small>CLOSE</small><b id="rClose">—</b></div>
+          </div>
+          <div class="win" id="win" hidden>
+            <small>YOU WIN</small><b id="winAmt"></b><div class="win__lines" id="winLines"></div>
+          </div>
+        </div>
+        <div class="conn" id="conn" hidden>Reconnecting…</div>
+      </section>
+
+      <div class="history" id="historyBox" aria-label="Last results"><span class="history__label">LAST</span><div class="history__track" id="history"></div></div>
+    </div>
+
+    <div class="tablewrap" id="tablewrap">
+      <section class="board" id="board" aria-label="Your numbers">
+        <div class="tabs" id="tabs" role="tablist">
+          <button type="button" role="tab" class="tab tab--on" data-tab="single" aria-selected="true">SINGLE<small>×9.6</small></button>
+          <button type="button" role="tab" class="tab" data-tab="jodi" aria-selected="false">JODI<small>×96</small></button>
+          <button type="button" role="tab" class="tab" data-tab="panna" aria-selected="false">PANNA<small>×160–960</small></button>
+        </div>
+        <div class="sections" id="sections">
+          <div class="sec sec--single" data-sec="single">
+            <div class="sec__head"><b>SINGLE</b><span>pays ×9.6</span></div>
+            <div class="side-lbl side-lbl--o">OPEN</div>
+            <div class="keys" id="keysOS"></div>
+            <div class="side-lbl side-lbl--c">CLOSE</div>
+            <div class="keys" id="keysCS"></div>
+          </div>
+          <div class="sec sec--jodi" data-sec="jodi">
+            <div class="sec__head"><b>JODI</b><span>open single × close single · pays ×96</span></div>
+            <div class="jgrid" id="jgrid"></div>
+            <div class="jpick" id="jpick">
+              <div class="side-lbl side-lbl--o">OPEN DIGIT <span class="jpick__val">JODI <i id="jpA">?</i><i>·</i></span></div>
+              <div class="keys keys--sm" id="keysJA"></div>
+              <div class="side-lbl side-lbl--c">CLOSE DIGIT <span class="jpick__hint" id="jpickHint"></span></div>
+              <div class="keys keys--sm" id="keysJB"></div>
+            </div>
+          </div>
+          <div class="sec sec--panna" data-sec="panna">
+            <div class="sec__head"><b>PANNA</b><span>3 digits · open or close</span></div>
+            <div class="ptog" id="ptog" role="radiogroup" aria-label="Pot">
+              <button type="button" class="ptog__b ptog__b--on" data-side="op" role="radio" aria-checked="true">OPEN</button>
+              <button type="button" class="ptog__b" data-side="cp" role="radio" aria-checked="false">CLOSE</button>
+            </div>
+            <div class="pbuild">
+              <div class="pslots"><i class="ps" id="ps0"></i><i class="ps" id="ps1"></i><i class="ps" id="ps2"></i></div>
+              <div class="ptag"><b id="pKind">PICK 3 DIGITS</b><span id="pPay">any order · sorted for you</span></div>
+              <button type="button" class="pback" id="pBack" aria-label="Remove last digit"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6h11v12H9l-6-6z M12 9.5l5 5m0-5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg></button>
+            </div>
+            <div class="keys keys--sm" id="keysP"></div>
+            <div class="plegend"><span>SINGLE ×160</span><span>DOUBLE ×320</span><span>TRIPLE ×960</span></div>
+          </div>
+        </div>
+        <div class="slip" id="slip" aria-label="Your bets this round"><span class="slip__label">YOUR SLIP</span><div class="slip__track" id="slipTrack"></div></div>
+      </section>
+
+      <section class="dock" id="dock" aria-label="Your bet">
+        <div class="dock__row">
+          <div class="dock__chips" id="chips" role="radiogroup" aria-label="Chip value"></div>
+          <div class="tools">
+            <button type="button" class="tool" id="undo" aria-label="Undo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 4 10l5 5M4.5 10H14a5.5 5.5 0 0 1 0 11h-3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Undo</span></button>
+            <button type="button" class="tool" id="clear" aria-label="Clear"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><span>Clear</span></button>
+            <button type="button" class="tool" id="rebet" aria-label="Repeat last bet"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12a7 7 0 1 1-2.1-5M19 4v4h-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Repeat</span></button>
+            <button type="button" class="tool" id="double" aria-label="Double"><b>2×</b><span>Double</span></button>
+          </div>
+        </div>
+        <div class="dock__row dock__row--go">
+          <div class="total"><small>TOTAL STAKE</small><b id="total">—</b></div>
+          <button type="button" class="place" id="action"><span id="placeLabel">Tap a number to bet</span><small id="placeSub"></small></button>
+        </div>
+      </section>
+    </div>
+
+    <aside class="side" id="side">
+      <section class="stats" aria-label="Last results">
+        <div class="stats__head">HOT SINGLES <span>last <b id="statN">0</b> rounds</span></div>
+        <div class="freq" id="freq"></div>
+        <div class="hc"><span>Triple panna <b id="tpSeen">—</b></span><span>Double <b id="dpShare">—</b></span></div>
+      </section>
+
+      <section class="bets">
+        <div class="bets__tabs" role="tablist">
+          <button type="button" role="tab" class="bets__tab bets__tab--on" data-tab="all" aria-selected="true">All bets</button>
+          <button type="button" role="tab" class="bets__tab" data-tab="mine" aria-selected="false">My bets</button>
+        </div>
+        <div class="bets__count"><span id="countLabel">Players this round</span> <strong id="betCount">0</strong></div>
+        <div class="bets__cols" id="cols"></div>
+        <div class="bets__list" id="list"></div>
+      </section>
+
+      <div class="wordmark" role="img" aria-label="NEXO RNG"></div>
+      <div class="links">
+        <button type="button" class="link" id="rulesBtn">Rules &amp; pays</button>
+        <button type="button" class="link" id="fair">Provably fair · round <span id="fRound">—</span></button>
+      </div>
+      <div class="fair__detail" id="fairDetail" hidden>
+        <p>Draw hash (published when betting opens)</p>
+        <code id="fHash">—</code>
+        <p>Server seed (revealed after the round)</p>
+        <code id="fSeed">—</code>
+        <p>Check: SHA-256(seed) = hash. The six digits are HMAC-SHA256(seed, "<span id="fGame">88.0092</span>:round:0") read as six unbiased numbers from 0 to 9 — open first, then close.</p>
+        <button type="button" class="link" id="fCheckBtn">Recompute the last round from its seed</button>
+        <p id="fCheck" hidden></p>
+      </div>
+    </aside>
+
+    <div class="modal" id="rules" role="dialog" aria-modal="true" aria-labelledby="rulesTitle" hidden>
+      <div class="modal__card">
+        <button type="button" class="modal__close" id="rulesClose" aria-label="Close">×</button>
+        <h2 id="rulesTitle">Matka Pulse — rules &amp; pays</h2>
+        <p>Every 30 seconds two pots draw a number for every player at the same time. The <b>OPEN</b> pot draws three digits, then the <b>CLOSE</b> pot draws three digits. Every digit is drawn from 0–9 with equal chance, and each ball goes back into its pot after it is read, so a digit can come up again.</p>
+        <p>Each pot's three digits are sorted into its <b>panna</b> (0 counts as the highest digit, so 7, 1, 0 makes 170). The last digit of the panna's sum is its <b>single</b>. Open single and close single together make the <b>jodi</b>. A result reads OPEN – JODI – CLOSE, for example <b>127 – 09 – 559</b>.</p>
+        <table class="paytable">
+          <tr><th>Bet</th><th>Wins when</th><th>Pays</th></tr>
+          <tr><td>Open single / Close single</td><td>that pot's single is your digit</td><td>9.6×</td></tr>
+          <tr><td>Jodi</td><td>open single and close single are your two digits</td><td>96×</td></tr>
+          <tr><td>Single panna (3 different digits)</td><td>that pot's panna is yours</td><td>160×</td></tr>
+          <tr><td>Double panna (two the same)</td><td>that pot's panna is yours</td><td>320×</td></tr>
+          <tr><td>Triple panna (all the same)</td><td>that pot's panna is yours</td><td>960×</td></tr>
+        </table>
+        <p>Pays are what you get back for each 1 staked, stake included (€1 on a winning single returns €9.60). Return to player (RTP): <b>96%</b> on every bet.</p>
+        <p><b>Bets</b> are open for 15 seconds. Pick a chip and tap your numbers, as many as you like (up to 20 different bets). Press <b>Place bets</b>, or your chips are placed for you just before betting closes. Then the open pot draws, the close pot draws, and the result shows until the next round starts.</p>
+        <p>Bet limits for one round (all your bets together): <b id="rMin">€0.10</b> to <b id="rMax">€100</b>.<span id="rMaxWin"></span></p>
+        <p class="muted">Malfunction voids all pays and plays.</p>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" hidden></div>
+    <div class="fx" id="fx" aria-hidden="true"></div>
+  </main>
+  <script src="../_core/sound-unlock.js"></script>
+  <script src="../_core/socket-auth.js"></script>
+  <script src="../_core/secure-socket.js"></script>
+  <script src="/nexorng-config.js"></script>
+  <script src="../_core/table-client.js"></script>
+  <script src="rules.js"></script>
+  <script src="../_core/players.js"></script>
+  <script src="audio.js"></script>
+  <script type="module" src="app.js"></script>
+  <script src="../_core/fit-screen.js"></script>
+  <script src="../_core/fair.js"></script>
+</body>
+</html>

@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en" style="color-scheme: dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0d0622">
+  <title>Jewel Drum — NEXO RNG</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game" id="game">
+    <!-- Phone: the drum stays at the top while the board and the lists scroll under it. -->
+    <div class="sticky" id="sticky">
+      <header class="top" id="top">
+        <button type="button" class="round-btn" id="back" aria-label="Back">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="brand" role="img" aria-label="Jewel Drum">
+          <svg class="brand__mark" viewBox="0 0 48 48" aria-hidden="true">
+            <defs>
+              <linearGradient id="jdGold" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#fff3cf"/><stop offset=".5" stop-color="#ffcf6b"/><stop offset=".56" stop-color="#e09a35"/><stop offset="1" stop-color="#ffe3a0"/></linearGradient>
+              <linearGradient id="jdViolet" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#c58bff"/><stop offset="1" stop-color="#5b21b6"/></linearGradient>
+            </defs>
+            <rect x="8" y="5" width="32" height="38" rx="7" fill="url(#jdViolet)" stroke="url(#jdGold)" stroke-width="2.4"/>
+            <path d="M8 16.5h32M8 31.5h32" stroke="url(#jdGold)" stroke-width="1.6"/>
+            <path d="M24 17.5 31 24l-7 6.5-7-6.5Z" fill="url(#jdGold)"/>
+            <path d="M2 24l4-3v6zM46 24l-4-3v6z" fill="url(#jdGold)"/>
+          </svg>
+          <span class="brand__text"><b>JEWEL DRUM</b><small>20 SYMBOLS · ONE DRUM</small></span>
+        </div>
+        <div class="wallet">
+          <span class="wallet__label" id="mode">Balance</span>
+          <strong id="balance">—</strong>
+          <button type="button" class="wallet__sound" id="music" aria-label="Music" aria-pressed="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.5V6.2l10-2.2v11.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.6" fill="currentColor"/><circle cx="16.5" cy="15.3" r="2.6" fill="currentColor"/></svg>
+          </button>
+          <button type="button" class="wallet__sound" id="sound" aria-label="Sound" aria-pressed="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <section class="stage" id="stage" aria-label="Jewel Drum">
+        <canvas id="scene" aria-hidden="true"></canvas>
+        <div class="stage__edges" aria-hidden="true"></div>
+        <!-- placed on the play area by app.js -->
+        <div class="play" id="play">
+          <div class="status" id="status" role="status"></div>
+          <div class="timer" id="timer" hidden>
+            <svg viewBox="0 0 100 100" aria-hidden="true">
+              <circle cx="50" cy="50" r="43" class="timer__bg"/>
+              <circle cx="50" cy="50" r="43" class="timer__ring" id="timerRing" pathLength="100"/>
+            </svg>
+            <strong id="timerNum">18</strong><small>BETS</small>
+          </div>
+          <div class="drawpill" id="drawpill" hidden>ROLLING</div>
+          <div class="banner" id="banner" hidden>
+            <img class="banner__ic" id="bannerIc" alt="">
+            <span class="banner__txt"><small id="bannerName"></small><b id="bannerX"></b></span>
+            <span class="banner__win" id="bannerWinBox"><small id="bannerTitle">You win</small><b id="bannerWin"></b><em id="bannerSub"></em></span>
+          </div>
+        </div>
+        <div class="conn" id="conn" hidden>Reconnecting…</div>
+      </section>
+
+      <div class="history" id="historyBox" aria-label="Last results"><span class="history__label">LAST</span><div class="history__track" id="history"></div></div>
+    </div>
+
+    <div class="tablewrap" id="tablewrap">
+      <section class="board" id="board" aria-label="Pick your jewels">
+        <div class="grid" id="grid"></div>
+      </section>
+
+      <section class="dock" id="dock" aria-label="Your bet">
+        <div class="dock__row">
+          <div class="dock__chips" id="chips" role="radiogroup" aria-label="Chip value"></div>
+          <div class="tools">
+            <button type="button" class="tool" id="undo" aria-label="Undo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5 4 10l5 5M4.5 10H14a5.5 5.5 0 0 1 0 11h-3" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Undo</span></button>
+            <button type="button" class="tool" id="clear" aria-label="Clear"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg><span>Clear</span></button>
+            <button type="button" class="tool" id="double" aria-label="Double"><b>2×</b><span>Double</span></button>
+            <button type="button" class="tool" id="rebet" aria-label="Repeat last bet"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12a7 7 0 1 1-2.1-5M19 4v4h-4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Rebet</span></button>
+          </div>
+        </div>
+        <div class="dock__row dock__row--go">
+          <div class="total"><small>TOTAL STAKE</small><b id="total">—</b></div>
+          <button type="button" class="place" id="action"><span id="placeLabel">Tap a jewel to bet</span><small id="placeSub"></small></button>
+        </div>
+      </section>
+    </div>
+
+    <aside class="side" id="side">
+      <section class="stats" aria-label="Last draws">
+        <div class="stats__head">Last <b id="statN">0</b> draws · seen / expected</div>
+        <div class="freq" id="freq"></div>
+        <div class="hc"><span>Hot <i id="hot">—</i></span><span>Cold <i id="cold">—</i></span></div>
+      </section>
+
+      <section class="bets">
+        <div class="bets__tabs" role="tablist">
+          <button type="button" role="tab" class="bets__tab bets__tab--on" data-tab="all" aria-selected="true">All bets</button>
+          <button type="button" role="tab" class="bets__tab" data-tab="mine" aria-selected="false">My bets</button>
+        </div>
+        <div class="bets__count"><span id="countLabel">Bets this round</span> <strong id="betCount">0</strong></div>
+        <div class="bets__cols" id="cols"></div>
+        <div class="bets__list" id="list"></div>
+      </section>
+
+      <div class="links">
+        <button type="button" class="link" id="rulesBtn">Rules &amp; pays</button>
+        <button type="button" class="link" id="fair">Provably fair · round <span id="fRound">—</span></button>
+      </div>
+      <div class="fair__detail" id="fairDetail" hidden>
+        <p>Draw hash (published when betting opens)</p>
+        <code id="fHash">—</code>
+        <p>Server seed (revealed after the round)</p>
+        <code id="fSeed">—</code>
+        <p>Check: SHA-256(seed) = hash. The draw is HMAC-SHA256(seed, "<span id="fGame">88.0093</span>:round:0") read as an unbiased number from 0 to 291, mapped through the symbol weights in drum order.</p>
+        <button type="button" class="link" id="fCheckBtn">Recompute the last round’s symbol from its seed</button>
+        <p id="fCheck" hidden></p>
+      </div>
+    </aside>
+
+    <div class="modal" id="rules" role="dialog" aria-modal="true" aria-labelledby="rulesTitle" hidden>
+      <div class="modal__card">
+        <button type="button" class="modal__close" id="rulesClose" aria-label="Close">×</button>
+        <h2 id="rulesTitle">Jewel Drum — rules &amp; pays</h2>
+        <p>Every 30 seconds the drum stops on one of its 20 jewels — the same draw for every player. Jewels are not equally likely: common jewels pay less, rare ones pay more (chances below).</p>
+        <p><b>Bets</b> are open for 18 seconds: pick a chip and tap jewels, a colour (column) or a family (row) — as many as you like; chips on the same spot add up. Press <b>Place bets</b>, or your chips are placed for you just before betting closes. The drum then rolls for about 7 seconds; the result shows until the next round.</p>
+        <table class="paytable" id="paytable"></table>
+        <p>Pays include your stake (×10 on €1 returns €10). The NX Emblem counts as Gold and as an Orb. RTP: <b>95.89%</b> on every jewel, family and Gold; <b>96.30%</b> on Violet, Emerald and Ruby.</p>
+        <p>Bet limits for one round (all your spots together): <b id="rMin">€0.10</b> to <b id="rMax">€100</b>. Max win per round: <b id="rMaxWin">as set by the casino</b> (shown here after your first bet).</p>
+        <p class="muted">Malfunction voids all pays and plays.</p>
+      </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" hidden></div>
+    <div class="fx" id="fx" aria-hidden="true"></div>
+  </main>
+  <script src="../_core/sound-unlock.js"></script>
+  <script src="../_core/socket-auth.js"></script>
+  <script src="../_core/secure-socket.js"></script>
+  <script src="/nexorng-config.js"></script>
+  <script src="../_core/table-client.js"></script>
+  <script src="rules.js"></script>
+  <script src="../_core/players.js"></script>
+  <script src="audio.js"></script>
+  <script type="module" src="app.js"></script>
+  <script src="../_core/fit-screen.js"></script>
+  <script src="../_core/fair.js"></script>
+</body>
+</html>

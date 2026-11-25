@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en" style="color-scheme: dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b3a4a">
+  <title>Mini Spin — NEXO RNG</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game">
+    <!-- Stays at the top while the board and the bets list scroll under it (phone). -->
+    <div class="sticky">
+      <header class="top">
+        <button type="button" class="round-btn" id="back" aria-label="Back">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="logo" aria-label="Mini Spin">
+          <svg class="logo__wheel" viewBox="0 0 40 40" aria-hidden="true">
+            <circle cx="20" cy="20" r="18" fill="#ff8a3d"/>
+            <circle cx="20" cy="20" r="14.5" fill="#fff3df"/>
+            <g class="logo__rot">
+              <circle cx="20" cy="20" r="10" fill="none" stroke="#2a3470" stroke-width="9"/>
+              <circle cx="20" cy="20" r="10" fill="none" stroke="#ff5470" stroke-width="9" stroke-dasharray="4.833 4.833"/>
+              <circle cx="20" cy="20" r="10" fill="none" stroke="#ffc93c" stroke-width="9" stroke-dasharray="4.833 58" stroke-dashoffset="4.833"/>
+            </g>
+            <circle cx="20" cy="20" r="5" fill="#2ee6b8" stroke="#0b3a4a" stroke-width="1.6"/>
+            <circle cx="27.5" cy="11" r="2.6" fill="#fff"/>
+          </svg>
+          <span class="logo__text"><span class="logo__mini">mini</span><span class="logo__spin">SPIN</span></span>
+        </div>
+        <div class="wallet">
+          <span class="wallet__label" id="mode">Balance</span>
+          <strong id="balance">—</strong>
+          <button type="button" class="wallet__btn" id="music" aria-label="Music on" aria-pressed="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 17.5V6.2l10-2.2v11.3" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="6.5" cy="17.5" r="2.6" fill="currentColor"/><circle cx="16.5" cy="15.3" r="2.6" fill="currentColor"/></svg>
+          </button>
+          <button type="button" class="wallet__btn" id="sound" aria-label="Sound on" aria-pressed="true">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9H4zm12.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z" fill="currentColor"/></svg>
+          </button>
+        </div>
+      </header>
+
+      <section class="stage" aria-label="Wheel">
+        <canvas id="scene" aria-hidden="true"></canvas>
+        <div class="stage__edges" aria-hidden="true"></div>
+        <!-- The play area (placed by app.js): the result bubble over the wheel and a hint line. -->
+        <div class="play" id="play">
+          <div class="pop" id="pop" aria-live="polite" hidden>
+            <div class="pop__ball" id="popBall"></div>
+            <div class="pop__win" id="popWin"></div>
+          </div>
+          <div class="hint" id="hint"></div>
+        </div>
+        <div class="conn" id="conn" hidden>Reconnecting…</div>
+      </section>
+
+      <div class="history" aria-label="Last results"><div class="history__track" id="history"></div></div>
+    </div>
+
+    <section class="panels" aria-label="Your bets">
+      <div class="panel">
+        <div class="board" id="board" role="group" aria-label="Betting board"></div>
+        <div class="sum" aria-live="polite">
+          <div><span>Total bet</span><strong id="total">—</strong></div>
+          <div><span>Possible win</span><strong id="maxWin">—</strong></div>
+        </div>
+        <div class="chips" id="chips" role="radiogroup" aria-label="Chip value"></div>
+        <div class="tools">
+          <button type="button" class="tool" id="undo" aria-label="Undo">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 7 4 12l5 5M4.5 12H15a5 5 0 0 1 0 10h-3" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <button type="button" class="tool" id="clear" aria-label="Clear bets">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+          </button>
+          <button type="button" class="tool tool--txt" id="double" aria-label="Double bets">×2</button>
+          <button type="button" class="tool" id="rebet" aria-label="Rebet">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12a7 7 0 1 1-2.1-5M19 4v4h-4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+        </div>
+        <button type="button" class="spin" id="spin"><span class="spin__label" id="spinLabel">Spin</span><small class="spin__sub" id="spinSub"></small></button>
+      </div>
+    </section>
+
+    <section class="bets">
+      <div class="stats" aria-label="Hot and cold numbers">
+        <div class="stats__row"><span class="stats__tag stats__tag--hot">Hot</span><span class="stats__balls" id="hot"></span></div>
+        <div class="stats__row"><span class="stats__tag stats__tag--cold">Cold</span><span class="stats__balls" id="cold"></span></div>
+        <div class="stats__bar" id="ratio" aria-hidden="true"><i class="r"></i><i class="z"></i><i class="b"></i></div>
+        <p class="stats__note" id="statsNote">Your last spins</p>
+      </div>
+      <div class="bets__head">
+        <div class="bets__tabs" role="tablist">
+          <button type="button" role="tab" class="bets__tab bets__tab--on" data-tab="all" aria-selected="true">All bets</button>
+          <button type="button" role="tab" class="bets__tab" data-tab="mine" aria-selected="false">My bets</button>
+        </div>
+      </div>
+      <div class="bets__cols" id="cols"></div>
+      <div class="bets__list" id="list"></div>
+      <button type="button" class="fair" id="fair" aria-expanded="false">Provably fair · round <span id="fRound">—</span></button>
+      <div class="fair__detail" id="fairDetail" hidden>
+        <p>Server seed hash (fixed before the spin)</p>
+        <code id="fHash">—</code>
+        <p>Server seed (revealed after the spin)</p>
+        <code id="fSeed">—</code>
+        <p>Your client seed (mixed into every spin)</p>
+        <input class="fair__seed" id="clientSeed" maxlength="64" spellcheck="false" aria-label="Client seed">
+        <p class="fair__note">Check: SHA-256(server seed) = hash; pocket = HMAC-SHA256(server seed, client seed:game:round), weighted pick with rejection sampling.</p>
+      </div>
+    </section>
+
+    <div class="toast" id="toast" role="status" hidden></div>
+  </main>
+  <script src="../_core/sound-unlock.js"></script>
+  <script src="../_core/socket-auth.js"></script>
+  <script src="../_core/secure-socket.js"></script>
+  <script src="/nexorng-config.js"></script>
+  <script src="../_core/wheel-client.js"></script>
+  <script src="../_core/spin-focus.js"></script>
+  <script src="app.js"></script>
+  <script src="../_core/fair.js"></script>
+</body>
+</html>

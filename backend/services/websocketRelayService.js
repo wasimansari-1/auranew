@@ -118,6 +118,14 @@ class WebSocketRelayService {
       }
       this.subscribers.get(eventId).add(ws);
 
+      // Dynamically ensure fallback loop is active for this game
+      if (!this.activeEvents.has(eventId)) {
+        this.activeEvents.add(eventId);
+        if (this.fallbackActive) {
+          this.runFallbackGameLoop(eventId);
+        }
+      }
+
       ws.send(JSON.stringify({ type: "subscribed", event: eventId }));
 
       // Send latest snapshot immediately so game starts rendering without delay

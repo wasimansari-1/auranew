@@ -70,28 +70,31 @@ app.use(async (req, res, next) => {
     return res.sendFile(localFile);
   }
 
-  try {
-    const upstreamUrl = `https://launch.nexorng.com${req.path}`;
-    const response = await axios({
-      method: req.method,
-      url: upstreamUrl,
-      responseType: "arraybuffer",
-      timeout: 8000,
-      validateStatus: () => true,
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Referer": "https://launch.nexorng.com/"
-      }
-    });
+  // Optional dynamic upstream mirror (Disabled by default for 100% autonomous operation)
+  if (process.env.ENABLE_UPSTREAM_MIRROR === "true") {
+    try {
+      const upstreamUrl = `https://launch.nexorng.com${req.path}`;
+      const response = await axios({
+        method: req.method,
+        url: upstreamUrl,
+        responseType: "arraybuffer",
+        timeout: 5000,
+        validateStatus: () => true,
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          "Referer": "https://launch.nexorng.com/"
+        }
+      });
 
-    if (response.status === 200) {
-      fs.mkdirSync(path.dirname(localFile), { recursive: true });
-      fs.writeFileSync(localFile, response.data);
-      const ct = response.headers["content-type"];
-      if (ct) res.setHeader("Content-Type", ct);
-      return res.status(200).send(response.data);
-    }
-  } catch (_) {}
+      if (response.status === 200) {
+        fs.mkdirSync(path.dirname(localFile), { recursive: true });
+        fs.writeFileSync(localFile, response.data);
+        const ct = response.headers["content-type"];
+        if (ct) res.setHeader("Content-Type", ct);
+        return res.status(200).send(response.data);
+      }
+    } catch (_) {}
+  }
 
   // Crucial: NEVER serve HTML for asset requests to prevent MIME type errors
   return res.status(404).type("text/plain").send("Asset not found");

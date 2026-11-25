@@ -1,0 +1,140 @@
+bee.webp
+size:1223,293
+filter:MipMapLinearLinear,Linear
+A
+bounds:943,219,74,92
+offsets:24,220,816,482
+rotate:90
+Layer 1 - Copy
+bounds:714,1,5,2
+Layer 2 - Copy
+bounds:750,2,8,4
+arm 1 sb
+bounds:649,1,7,16
+arm 2 sb
+bounds:674,2,15,13
+rotate:90
+b
+bounds:1092,75,51,70
+offsets:541,68,816,482
+rotate:90
+body sb
+bounds:1193,152,38,22
+offsets:1,20,47,54
+rotate:90
+cmile honeybee
+bounds:688,3,14,14
+offsets:0,3,14,28
+cmile sb
+bounds:733,4,8,13
+d
+bounds:1117,239,54,77
+offsets:136,231,816,482
+rotate:90
+e
+bounds:943,117,47,74
+offsets:760,234,816,482
+rotate:90
+e1 honeybee
+bounds:657,2,15,17
+rotate:90
+e1 sb
+bounds:758,2,4,8
+rotate:90
+e2 honeybee
+bounds:772,7,10,17
+rotate:90
+e2 sb
+bounds:790,8,9,9
+ea
+bounds:1064,4,47,70
+offsets:639,68,816,482
+eb 2 sb
+bounds:742,4,13,7
+rotate:90
+ee
+bounds:1036,190,47,75
+offsets:329,233,816,482
+rotate:90
+eee
+bounds:1016,4,48,70
+offsets:734,68,816,482
+eeee
+bounds:1112,4,47,70
+offsets:337,68,816,482
+eyebr 1 sb
+bounds:767,3,4,6
+rotate:90
+f 2 sb
+bounds:709,3,14,5
+rotate:90
+face sb
+bounds:1195,239,25,22
+facer 14 honeybee
+bounds:1163,36,43,41
+foot 1 sb
+bounds:703,3,14,5
+rotate:90
+green copy
+bounds:277,4,371,289
+offsets:372,49,960,540
+h
+bounds:1018,80,58,73
+offsets:41,67,816,482
+rotate:90
+han 1 sb
+bounds:819,9,7,8
+head line
+bounds:1193,191,23,23
+head line 2
+bounds:1195,215,23,23
+hr 1 sb
+bounds:800,8,19,9
+hr 2 sb
+bounds:714,4,13,18
+rotate:90
+n
+bounds:943,165,53,74
+offsets:411,235,816,482
+rotate:90
+nn
+bounds:943,62,54,72
+offsets:234,69,816,482
+rotate:90
+o
+bounds:1167,78,55,73
+offsets:137,68,816,482
+r
+bounds:1036,238,55,80
+offsets:674,227,816,482
+rotate:90
+t
+bounds:1018,138,51,74
+offsets:501,234,816,482
+rotate:90
+u
+bounds:1117,186,52,76
+offsets:587,232,816,482
+rotate:90
+v
+bounds:1093,127,58,73
+offsets:227,236,816,482
+rotate:90
+w1 sb
+bounds:1195,262,25,30
+offsets:0,16,39,46
+w2 sb
+bounds:750,7,22,10
+offsets:0,16,38,41
+wing 3
+bounds:649,18,275,294
+offsets:231,200,960,540
+rotate:90
+wing 4
+bounds:1,2,290,275
+offsets:487,200,960,540
+rotate:90
+y
+bounds:943,4,57,71
+offsets:434,68,816,482
+rotate:90

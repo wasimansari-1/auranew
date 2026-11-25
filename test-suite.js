@@ -26,7 +26,7 @@ async function runTests() {
     balance: 25000,
     currency: "INR",
     gameId: "88.0034",
-    returnUrl: "https://mycasino.com/lobby"
+    returnUrl: "http://localhost:4000/lobby"
   });
   console.log("✓ Partner Launch URL:", launchRes.data.launchUrl);
   const token = launchRes.data.token;

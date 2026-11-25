@@ -5,7 +5,7 @@ import { seamlessWalletService } from "./seamlessWalletService.js";
 /**
  * NexoRNG Real-Time WebSocket Engine & Autonomous Provably Fair Fallback
  * - 100% Autonomous SHA-256 HMAC RNG Engine
- * - Zero dependency on upstream launch.nexorng.com by default
+ * - 100% Autonomous Zero External Dependency Master Engine
  * - Optional Live Multiplier Relay via ENABLE_UPSTREAM_RELAY=true
  */
 class WebSocketRelayService {
